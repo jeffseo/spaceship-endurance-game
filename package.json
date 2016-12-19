@@ -1,0 +1,23 @@
+{
+  "name": "kepler",
+  "version": "1.0.0",
+  "description": "Project-1 kepler",
+  "main": "app.js",
+  "scripts": {
+    "test": "npm test",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jfseo/Kepler.git"
+  },
+  "author": "Seo",
+  "bugs": {
+    "url": "https://github.com/jfseo/Kepler/issues"
+  },
+  "homepage": "https://github.com/jfseo/Kepler#readme",
+  "dependencies": {
+    "express": "^4.14.0",
+    "morgan": "^1.7.0"
+  }
+}
