@@ -1,22 +1,13 @@
 // Global variables
-const GAME_HEIGHT = 320;
-const GAME_WIDTH = 1.61 * GAME_HEIGHT;
-const INITIAL_POSITION_X = GAME_WIDTH * .10;
-const INITIAL_POSITION_Y = GAME_HEIGHT / 2;
-const INITIAL_SHIP_RADIUS = 10;
+// golden ratio apparently is width = 1.61 * height
 const INITIAL_SHIP_SPEED = 4;
 const BOOSTED_SHIP_SPEED = 6;
 
 window.onload = () => {
-  initializeCanvas();
+  resizeCanvas();
   const game = new Game();
   game.start();
-}
-
-const initializeCanvas = () => {
-  const canvas = getGameCanvas();
-  canvas.width = GAME_WIDTH;
-  canvas.height = GAME_HEIGHT;
+  window.addEventListener('resize', resizeCanvas, false);
 }
 
 class Drawable {
@@ -31,6 +22,10 @@ class Drawable {
 
   setContext(context) {
     this.context = context;
+  }
+
+  setCanvas(canvas) {
+    this.canvas = canvas;
   }
 
   setCoordinates(x, y) {
@@ -72,7 +67,7 @@ class SpaceShip extends Drawable {
   }
 
   move() {
-    if (this.controller) {
+    if (this.controller && this.canvas) {
       this.setSpeedBoost();
       if (this.controller.isKeyPressed('up') && this.y > this.width) {
         this.y -= this.speed;
@@ -81,10 +76,10 @@ class SpaceShip extends Drawable {
         }
       }
 
-      if (this.controller.isKeyPressed('down') && this.y < GAME_HEIGHT - this.width) {
+      if (this.controller.isKeyPressed('down') && this.y < this.canvas.height - this.width) {
         this.y += this.speed;
-        if (this.y > GAME_HEIGHT - this.width) {
-          this.y = GAME_HEIGHT - this.width;
+        if (this.y > this.canvas.height - this.width) {
+          this.y = this.canvas.height - this.width;
         }
       }
 
@@ -95,10 +90,10 @@ class SpaceShip extends Drawable {
         }
       }
 
-      if (this.controller.isKeyPressed('right') && this.x < GAME_WIDTH) {
+      if (this.controller.isKeyPressed('right') && this.x < this.canvas.width) {
         this.x += this.speed;
-        if (this.x > GAME_WIDTH) {
-          this.x = GAME_WIDTH;
+        if (this.x > this.canvas.width) {
+          this.x = this.canvas.width;
         }
       }
     }
@@ -207,7 +202,8 @@ class Game {
     this.canvas = getGameCanvas();
     this.context = get2DContext();
     this.controller = new Controller();
-    this.spaceShip = new SpaceShip(INITIAL_POSITION_X, INITIAL_POSITION_Y, 5, 15, getRandomColor(), INITIAL_SHIP_SPEED);
+    this.spaceShip = new SpaceShip(this.canvas.width * .10, this.canvas.height / 2, 5, 15, getRandomColor(), INITIAL_SHIP_SPEED);
+    this.spaceShip.setCanvas(this.canvas);
     this.spaceShip.setContext(this.context);
     this.spaceShip.setController(this.controller);
     this.obstacles = [];
@@ -363,7 +359,7 @@ class Game {
 
   clear() {
     this.controller.clear();
-    this.spaceShip.setCoordinates(INITIAL_POSITION_X, INITIAL_POSITION_Y);
+    this.spaceShip.setCoordinates(this.canvas.width * .10, this.canvas.height / 2);
     this.spaceShip.setColor(getRandomColor());
     this.obstacles = [];
     this.score = 0;
@@ -449,6 +445,12 @@ const clearCanvas = () => {
 // return 2D rendering context: used to paint on the Canvas
 const get2DContext = () => {
   return getGameCanvas().getContext("2d");
+}
+
+const resizeCanvas = () => {
+  const canvas = getGameCanvas();
+  canvas.width = window.innerWidth * .75;
+  canvas.height = window.innerHeight * .75;
 }
 
 // http://stackoverflow.com/questions/1484506/random-color-generator-in-javascript
