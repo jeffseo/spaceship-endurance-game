@@ -1,11 +1,11 @@
 // Global variables
-const GAME_WIDTH = 480;
 const GAME_HEIGHT = 320;
+const GAME_WIDTH = 1.61 * GAME_HEIGHT;
 const INITIAL_POSITION_X = GAME_WIDTH * .10;
 const INITIAL_POSITION_Y = GAME_HEIGHT / 2;
 const INITIAL_SHIP_RADIUS = 10;
-const INITIAL_SHIP_SPEED = 2;
-const BOOSTED_SHIP_SPEED = 4;
+const INITIAL_SHIP_SPEED = 4;
+const BOOSTED_SHIP_SPEED = 6;
 
 window.onload = () => {
   initializeCanvas();
@@ -24,7 +24,11 @@ class Drawable {
     this.x = x;
     this.y = y;
     this.color = "black";
-    this.speed = 2;
+    this.speed = INITIAL_SHIP_SPEED;
+  }
+
+  setContext() {
+    throw new TypeError("Please implement the abstract method setContext");
   }
 
   draw() {
@@ -106,6 +110,14 @@ class SpaceShip extends Drawable {
     return [v1,v2,v3];
   }
 
+  setContext(context) {
+    this.context = context;
+  }
+
+  setController(controller) {
+    this.controller = controller;
+  }
+
   // TODO: For performance reasons, it is likely that I would have to clear a portion of the canvas eventually.
   // clear() {
   //   if (this.context) {
@@ -115,9 +127,11 @@ class SpaceShip extends Drawable {
 }
 
 class Obstacle extends Drawable {
-  constructor(x, y, radius) {
+  constructor(x, y, radius, color, speed) {
     super(x,y);
     this.radius = radius;
+    this.color = color;
+    this.speed = speed;
   }
 
   draw() {
@@ -133,6 +147,10 @@ class Obstacle extends Drawable {
   move() {
     this.x -= this.speed;
     this.draw();
+  }
+
+  setContext(context) {
+    this.context = context;
   }
 }
 
@@ -217,9 +235,10 @@ class Game {
     this.context = get2DContext();
     this.controller = new Controller();
     this.spaceShip = new SpaceShip(INITIAL_POSITION_X, INITIAL_POSITION_Y, 5, 15);
-    this.spaceShip.context = this.context;
-    this.spaceShip.controller = this.controller;
+    this.spaceShip.setContext(this.context);
+    this.spaceShip.setController(this.controller);
     this.obstacles = [];
+    this.counter = 0;
     this.score = 0;
     this.states = {
       menu: false,
@@ -236,7 +255,7 @@ class Game {
   }
 
   start() {
-    setInterval(this.updateGame.bind(this), 10);
+    setInterval(this.updateGame.bind(this), 15);
     this.changeState('menu');
   }
 
@@ -253,6 +272,11 @@ class Game {
     } else if (this.states.playing) {
       if (this.controller.escapePressed) {
         this.changeState('paused');
+      }
+      this.counter++;
+      if (this.counter >= 60) {
+        this.score++;
+        this.counter = 0;
       }
       this.detectCollision();
       this.spaceShip.move();
@@ -296,15 +320,13 @@ class Game {
 
   addStateEvents(state) {
     if (state == 'menu') {
-      console.log("Adding state events for menu");
       this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 1000));
     } else if (state == 'playing') {
-      console.log("Adding state events for playing");
       this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 1000));
     } else if (state == 'paused') {
-      console.log("Adding state events for paused");
+
     } else if (state == 'end') {
-      console.log("Adding state events for end");
+
     } else {
       throw new TypeError("Invalid state!");
     }
@@ -316,9 +338,8 @@ class Game {
       const randomPosition = Math.floor(Math.random() * GAME_HEIGHT);
       const randomRadius = Math.floor(Math.random() * 100) + 1;
       const randomSpeed = Math.floor(Math.random() * 5) + 1;
-      const obstacle = new Obstacle(GAME_WIDTH, randomPosition, randomRadius);
-      obstacle.speed = randomSpeed;
-      obstacle.context = this.context;
+      const obstacle = new Obstacle(GAME_WIDTH, randomPosition, randomRadius, getRandomColor(), randomSpeed);
+      obstacle.setContext(this.context);
       this.obstacles.push(obstacle);
     }
   }
@@ -327,7 +348,6 @@ class Game {
     for (let i = 0; i < this.obstacles.length; i += 1) {
       if (this.obstacles[i].x < -this.obstacles[i].radius) {
         this.obstacles.splice(i, 1);
-        this.score++;
       }
       else {
         this.obstacles[i].move();
@@ -375,18 +395,13 @@ class Game {
     return false;
   }
 
-  restart() {
-    alert(`Rekt. Found ${this.score} planets`);
-    this.changeState('menu');
-    this.clear();
-  }
-
   clear() {
     this.controller.clear();
     this.spaceShip.x = INITIAL_POSITION_X;
     this.spaceShip.y = INITIAL_POSITION_Y;
     this.obstacles = [];
     this.score = 0;
+    this.counter = 0;
   }
 
   drawScore() {
@@ -431,4 +446,14 @@ const clearCanvas = () => {
 // return 2D rendering context: used to paint on the Canvas
 const get2DContext = () => {
   return getGameCanvas().getContext("2d");
+}
+
+// http://stackoverflow.com/questions/1484506/random-color-generator-in-javascript
+const getRandomColor = () => {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
 }
