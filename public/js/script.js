@@ -267,20 +267,22 @@ class Game {
         this.clear();
       }
       this.spaceShip.move();
-      this.updateObstacles();
+      this.moveObstacles();
+      this.refreshObstacles();
       this.drawMenu();
     } else if (this.states.playing) {
       if (this.controller.escapePressed) {
         this.changeState('paused');
       }
-      this.counter++;
       if (this.counter >= 60) {
         this.score++;
         this.counter = 0;
+        this.refreshObstacles();
       }
       this.detectCollision();
       this.spaceShip.move();
-      this.updateObstacles();
+      this.moveObstacles();
+      this.counter++;
       this.drawScore();
     } else if (this.states.paused) {
       if (this.controller.enterPressed) {
@@ -344,13 +346,14 @@ class Game {
     }
   }
 
-  updateObstacles() {
+  moveObstacles() {
+    this.obstacles.forEach(obstacle => obstacle.move());
+  }
+
+  refreshObstacles() {
     for (let i = 0; i < this.obstacles.length; i += 1) {
       if (this.obstacles[i].x < -this.obstacles[i].radius) {
         this.obstacles.splice(i, 1);
-      }
-      else {
-        this.obstacles[i].move();
       }
     }
   }
