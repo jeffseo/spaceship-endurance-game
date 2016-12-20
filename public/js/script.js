@@ -20,15 +20,22 @@ const initializeCanvas = () => {
 }
 
 class Drawable {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.color = "black";
-    this.speed = INITIAL_SHIP_SPEED;
+  constructor(x, y, color) {
+    this.setCoordinates(x, y);
+    this.setColor(color);
   }
 
-  setContext() {
-    throw new TypeError("Please implement the abstract method setContext");
+  setColor(color) {
+    this.color = color;
+  }
+
+  setContext(context) {
+    this.context = context;
+  }
+
+  setCoordinates(x, y) {
+    this.x = x;
+    this.y = y;
   }
 
   draw() {
@@ -41,11 +48,11 @@ class Drawable {
 }
 
 class SpaceShip extends Drawable {
-  constructor(x, y, width, height, speed) {
-    super(x,y);
+  constructor(x, y, width, height, color, speed) {
+    super(x, y, color);
     this.width = width;
     this.height = height;
-    this.color = "#0095DD";
+    this.speed = speed;
   }
 
   draw() {
@@ -63,39 +70,38 @@ class SpaceShip extends Drawable {
   move() {
     if (this.controller) {
       this.setSpeedBoost();
-      if (this.controller.upPressed && this.y > this.width) {
+      if (this.controller.isKeyPressed('up') && this.y > this.width) {
         this.y -= this.speed;
         if (this.y < this.width) {
           this.y = this.width;
         }
       }
 
-      if (this.controller.downPressed && this.y < GAME_HEIGHT - this.width) {
+      if (this.controller.isKeyPressed('down') && this.y < GAME_HEIGHT - this.width) {
         this.y += this.speed;
         if (this.y > GAME_HEIGHT - this.width) {
           this.y = GAME_HEIGHT - this.width;
         }
       }
 
-      if (this.controller.leftPressed && this.x > this.height) {
+      if (this.controller.isKeyPressed('left') && this.x > this.height) {
         this.x -= this.speed;
         if (this.x < this.height) {
           this.x = this.height;
         }
       }
 
-      if (this.controller.rightPressed && this.x < GAME_WIDTH) {
+      if (this.controller.isKeyPressed('right') && this.x < GAME_WIDTH) {
         this.x += this.speed;
         if (this.x > GAME_WIDTH) {
           this.x = GAME_WIDTH;
         }
       }
-      this.draw();
     }
   }
 
   setSpeedBoost() {
-    if (this.controller.spacePressed) {
+    if (this.controller.isKeyPressed('space')) {
       this.speed = BOOSTED_SHIP_SPEED;
     }
     else {
@@ -108,10 +114,6 @@ class SpaceShip extends Drawable {
     const v2 = [this.x - this.height, this.y - this.width];
     const v3 = [this.x - this.height, this.y + this.width];
     return [v1,v2,v3];
-  }
-
-  setContext(context) {
-    this.context = context;
   }
 
   setController(controller) {
@@ -128,9 +130,8 @@ class SpaceShip extends Drawable {
 
 class Obstacle extends Drawable {
   constructor(x, y, radius, color, speed) {
-    super(x,y);
+    super(x, y, color);
     this.radius = radius;
-    this.color = color;
     this.speed = speed;
   }
 
@@ -146,24 +147,22 @@ class Obstacle extends Drawable {
 
   move() {
     this.x -= this.speed;
-    this.draw();
-  }
-
-  setContext(context) {
-    this.context = context;
   }
 }
 
 class Controller {
   constructor() {
-    //TODO: Refactor into a dict?
-    this.leftPressed = false;
-    this.rightPressed = false;
-    this.upPressed = false;
-    this.downPressed = false;
-    this.spacePressed = false;
-    this.enterPressed = false;
-    this.escapePressed = false;
+    this.keyCodes = {
+      13: 'enter',
+      27: 'escape',
+      32: 'space',
+      37: 'left',
+      38: 'up',
+      39: 'right',
+      40: 'down',
+    };
+    this.keyPressedStatus = {};
+    this.clear();
     this.setUpControllerEvents();
   }
 
@@ -173,59 +172,28 @@ class Controller {
   }
 
   keyDownHandler(e) {
-    if (e.keyCode == 13) {
-      this.enterPressed = true;
-    }
-
-    if (e.keyCode == 27) {
-      this.escapePressed = true;
-    }
-
-    if (e.keyCode == 32) {
-      this.spacePressed = true;
-    }
-
-    if (e.keyCode == 37) {
-      this.leftPressed = true;
-    } else if (e.keyCode == 38) {
-      this.upPressed = true;
-    } else if (e.keyCode == 39) {
-      this.rightPressed = true;
-    } else if (e.keyCode == 40 ) {
-      this.downPressed = true;
+    if (e.keyCode in this.keyCodes) {
+      this.keyPressedStatus[this.keyCodes[e.keyCode]] = true;
     }
   }
 
   keyUpHandler(e) {
-    if (e.keyCode == 13) {
-      this.enterPressed = false;
-    }
-
-    if (e.keyCode == 27) {
-      this.escapePressed = false;
-    }
-
-    if (e.keyCode == 32) {
-      this.spacePressed = false;
-    }
-
-    if(e.keyCode == 37) {
-      this.leftPressed = false;
-    } else if (e.keyCode == 38) {
-      this.upPressed = false;
-    } else if(e.keyCode == 39) {
-      this.rightPressed = false;
-    } else if (e.keyCode == 40) {
-      this.downPressed = false;
+    if (e.keyCode in this.keyCodes) {
+      this.keyPressedStatus[this.keyCodes[e.keyCode]] = false;
     }
   }
 
+  isKeyPressed(keyName) {
+    if (keyName in this.keyPressedStatus) {
+      return this.keyPressedStatus[keyName];
+    }
+    return false;
+  }
+
   clear() {
-    this.leftPressed = false;
-    this.rightPressed = false;
-    this.upPressed = false;
-    this.downPressed = false;
-    this.spacePressed = false;
+    for (let code in this.keyCodes) {
+      this.keyPressedStatus[this.keyCodes[code]] = false;
+    }
   }
 }
 
@@ -234,11 +202,11 @@ class Game {
     this.canvas = getGameCanvas();
     this.context = get2DContext();
     this.controller = new Controller();
-    this.spaceShip = new SpaceShip(INITIAL_POSITION_X, INITIAL_POSITION_Y, 5, 15);
+    this.spaceShip = new SpaceShip(INITIAL_POSITION_X, INITIAL_POSITION_Y, 5, 15, getRandomColor(), INITIAL_SHIP_SPEED);
     this.spaceShip.setContext(this.context);
     this.spaceShip.setController(this.controller);
     this.obstacles = [];
-    this.counter = 0;
+    this.timer = 0;
     this.score = 0;
     this.states = {
       menu: false,
@@ -255,6 +223,7 @@ class Game {
   }
 
   start() {
+    setInterval(this.incrementTimerAndScore.bind(this), 1000);
     setInterval(this.updateGame.bind(this), 15);
     this.changeState('menu');
   }
@@ -262,39 +231,27 @@ class Game {
   updateGame() {
     clearCanvas();
     if (this.states.menu) {
-      if (this.controller.enterPressed) {
+      if (this.controller.isKeyPressed('enter')) {
         this.changeState('playing');
         this.clear();
       }
-      this.spaceShip.move();
-      this.moveObstacles();
-      this.refreshObstacles();
-      this.drawMenu();
+      this.renderMenuScreen();
     } else if (this.states.playing) {
-      if (this.controller.escapePressed) {
+      if (this.controller.isKeyPressed('escape')) {
         this.changeState('paused');
       }
-      if (this.counter >= 60) {
-        this.score++;
-        this.counter = 0;
-        this.refreshObstacles();
-      }
-      this.detectCollision();
-      this.spaceShip.move();
-      this.moveObstacles();
-      this.counter++;
-      this.drawScore();
+      this.renderPlayScreen();
     } else if (this.states.paused) {
-      if (this.controller.enterPressed) {
+      if (this.controller.isKeyPressed('enter')) {
         this.changeState('playing');
       }
-      this.drawPauseScreen();
+      this.renderPauseScreen();
     } else if (this.states.end) {
-      if (this.controller.enterPressed) {
+      if (this.controller.isKeyPressed('enter')) {
         this.changeState('playing');
         this.clear();
       }
-      this.drawEndScreen();
+      this.renderEndScreen();
     }
   }
 
@@ -322,13 +279,15 @@ class Game {
 
   addStateEvents(state) {
     if (state == 'menu') {
-      this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 1000));
+      this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 500));
+      this.stateEvents[state].push(setInterval(this.refreshObstacles.bind(this), 1000));
     } else if (state == 'playing') {
-      this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 1000));
+      this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 750));
+      this.stateEvents[state].push(setInterval(this.refreshObstacles.bind(this), 1000));
     } else if (state == 'paused') {
-
+      //add event listeners as necessary
     } else if (state == 'end') {
-
+      //add event listeners as necessary
     } else {
       throw new TypeError("Invalid state!");
     }
@@ -350,6 +309,10 @@ class Game {
     this.obstacles.forEach(obstacle => obstacle.move());
   }
 
+  drawObstacles() {
+    this.obstacles.forEach(obstacle => obstacle.draw());
+  }
+
   refreshObstacles() {
     for (let i = 0; i < this.obstacles.length; i += 1) {
       if (this.obstacles[i].x < -this.obstacles[i].radius) {
@@ -362,12 +325,6 @@ class Game {
   //TODO: Maybe include test scenario 2 and 3 from reference?
   detectCollision() {
     for (let i = 0; i < this.obstacles.length; i += 1) {
-      // if (this.spaceShip.x < obstacle.x + obstacle.radius &&
-      //     this.spaceShip.x > obstacle.x - obstacle.radius &&
-      //     this.spaceShip.y < obstacle.y + obstacle.radius &&
-      //     this.spaceShip.y > obstacle.y - obstacle.radius) {
-      //   return true;
-      // }
       if (this.isSpaceShipVertexWithinCircle(this.obstacles[i])){
         this.changeState('end');
       }
@@ -400,11 +357,18 @@ class Game {
 
   clear() {
     this.controller.clear();
-    this.spaceShip.x = INITIAL_POSITION_X;
-    this.spaceShip.y = INITIAL_POSITION_Y;
+    this.spaceShip.setCoordinates(INITIAL_POSITION_X, INITIAL_POSITION_Y);
+    this.spaceShip.setColor(getRandomColor());
     this.obstacles = [];
     this.score = 0;
-    this.counter = 0;
+    this.timer = 0;
+  }
+
+  incrementTimerAndScore() {
+    this.timer++;
+    if (this.score < this.timer && this.states.playing) {
+      this.score++;
+    }
   }
 
   drawScore() {
@@ -431,6 +395,36 @@ class Game {
     this.context.fillStyle = "#0095DD";
     this.context.fillText(`Rekt. Score: ${this.score}`, this.canvas.width*.20, this.canvas.height/4);
     this.context.fillText(`Press Enter to restart!`, this.canvas.width*.20, this.canvas.height/2);
+  }
+
+  renderMenuScreen() {
+    this.spaceShip.move();
+    this.spaceShip.draw();
+    this.moveObstacles();
+    this.drawObstacles();
+    this.drawMenu();
+  }
+
+  renderPlayScreen() {
+    this.detectCollision();
+    this.spaceShip.move();
+    this.spaceShip.draw();
+    this.moveObstacles();
+    this.drawObstacles();
+    this.drawScore();
+  }
+
+  renderPauseScreen() {
+    this.spaceShip.draw();
+    this.drawObstacles();
+    this.drawPauseScreen();
+    this.drawScore();
+  }
+
+  renderEndScreen() {
+    this.spaceShip.draw();
+    this.drawObstacles();
+    this.drawEndScreen();
   }
 }
 
