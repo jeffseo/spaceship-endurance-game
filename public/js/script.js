@@ -57,10 +57,14 @@ class SpaceShip extends Drawable {
 
   draw() {
     if (this.context) {
+      const vertices = this.getVertices();
       this.context.beginPath();
-      this.context.moveTo(this.x, this.y);
-      this.context.lineTo(this.x - this.height, this.y - this.width);
-      this.context.lineTo(this.x - this.height, this.y + this.width);
+      this.context.moveTo(vertices[0][0], vertices[0][1]);
+      this.context.lineTo(vertices[1][0], vertices[1][1]);
+      this.context.lineTo(vertices[2][0], vertices[2][1]);
+      this.context.moveTo(vertices[2][0], vertices[2][1]);
+      this.context.lineTo(vertices[0][0], vertices[0][1]);
+      this.context.stroke();
       this.context.fillStyle = this.color;
       this.context.fill();
       this.context.closePath();
@@ -141,6 +145,7 @@ class Obstacle extends Drawable {
       this.context.arc(this.x, this.y, this.radius, 0, Math.PI*2);
       this.context.fillStyle = this.color;
       this.context.fill();
+      this.context.stroke();
       this.context.closePath();
     }
   }
@@ -296,10 +301,11 @@ class Game {
   generateObstacles() {
     // generate obstacle if true
     if (Math.random() >= 0.5) {
-      const randomPosition = Math.floor(Math.random() * GAME_HEIGHT);
-      const randomRadius = Math.floor(Math.random() * 100) + 1;
-      const randomSpeed = Math.floor(Math.random() * 5) + 1;
-      const obstacle = new Obstacle(GAME_WIDTH, randomPosition, randomRadius, getRandomColor(), randomSpeed);
+      const yPosition = Math.floor(Math.random() * this.canvas.height);
+      const radius = Math.floor(Math.random() * 100) + 1;
+      const randomSpeed = Math.floor(Math.random() * 15) + 1;
+      const scaledSpeed = Math.floor(randomSpeed * this.score/100) + 1;
+      const obstacle = new Obstacle(this.canvas.width + radius, yPosition, radius, getRandomColor(), scaledSpeed);
       obstacle.setContext(this.context);
       this.obstacles.push(obstacle);
     }
