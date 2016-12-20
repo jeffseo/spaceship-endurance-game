@@ -8,6 +8,7 @@ window.onload = () => {
   const game = new Game();
   game.start();
   window.addEventListener('resize', resizeCanvas, false);
+  window.addEventListener('orientationchange', resizeCanvas, false);
 }
 
 class Drawable {
@@ -68,32 +69,36 @@ class SpaceShip extends Drawable {
 
   move() {
     if (this.controller && this.canvas) {
-      this.setSpeedBoost();
-      if (this.controller.isKeyPressed('up') && this.y > this.width) {
-        this.y -= this.speed;
-        if (this.y < this.width) {
-          this.y = this.width;
+      if (this.controller.touchEvents.length != 0) {
+        console.log(this.controller.touchEvents);
+      } else {
+        this.setSpeedBoost();
+        if (this.controller.isKeyPressed('up') && this.y > this.width) {
+          this.y -= this.speed;
+          if (this.y < this.width) {
+            this.y = this.width;
+          }
         }
-      }
 
-      if (this.controller.isKeyPressed('down') && this.y < this.canvas.height - this.width) {
-        this.y += this.speed;
-        if (this.y > this.canvas.height - this.width) {
-          this.y = this.canvas.height - this.width;
+        if (this.controller.isKeyPressed('down') && this.y < this.canvas.height - this.width) {
+          this.y += this.speed;
+          if (this.y > this.canvas.height - this.width) {
+            this.y = this.canvas.height - this.width;
+          }
         }
-      }
 
-      if (this.controller.isKeyPressed('left') && this.x > this.height) {
-        this.x -= this.speed;
-        if (this.x < this.height) {
-          this.x = this.height;
+        if (this.controller.isKeyPressed('left') && this.x > this.height) {
+          this.x -= this.speed;
+          if (this.x < this.height) {
+            this.x = this.height;
+          }
         }
-      }
 
-      if (this.controller.isKeyPressed('right') && this.x < this.canvas.width) {
-        this.x += this.speed;
-        if (this.x > this.canvas.width) {
-          this.x = this.canvas.width;
+        if (this.controller.isKeyPressed('right') && this.x < this.canvas.width) {
+          this.x += this.speed;
+          if (this.x > this.canvas.width) {
+            this.x = this.canvas.width;
+          }
         }
       }
     }
@@ -151,7 +156,9 @@ class Obstacle extends Drawable {
 }
 
 class Controller {
-  constructor() {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.touchEvents = [];
     this.keyCodes = {
       13: 'enter',
       27: 'escape',
@@ -169,6 +176,10 @@ class Controller {
   setUpControllerEvents() {
     document.addEventListener("keydown", this.keyDownHandler.bind(this), false);
     document.addEventListener("keyup", this.keyUpHandler.bind(this), false);
+    this.canvas.addEventListener("touchstart", this.startHandler.bind(this), false);
+    this.canvas.addEventListener("touchend", this.endHandler.bind(this), false);
+    this.canvas.addEventListener("touchcancel", this.cancelHandler.bind(this), false);
+    this.canvas.addEventListener("touchmove", this.moveHandler.bind(this), false);
   }
 
   keyDownHandler(e) {
@@ -195,13 +206,47 @@ class Controller {
       this.keyPressedStatus[this.keyCodes[code]] = false;
     }
   }
+
+  setCanvas(canvas) {
+    this.canvas = canvas;
+  }
+
+  // The following are handlers for touch events
+  startHandler(e) {
+    e.preventDefault();
+    e.changedTouches.forEach((touch) => {
+      this.touchEvents.unshift(this.copyTouch(touch));
+    })
+  }
+
+  moveHandler(e) {
+    e.preventDefault();
+    e.changedTouches.forEach((touch) => {
+      this.touchEvents.unshift(this.copyTouch(touch));
+    })
+  }
+
+  endHandler(e) {
+    e.preventDefault();
+    e.changedTouches.forEach((touch) => {
+      this.touchEvents.unshift(this.copyTouch(touch));
+    })
+  }
+
+  cancelHandler(e) {
+
+  }
+
+  copyTouch(touch) {
+    return { identifier: touch.identifier, pageX: touch.pageX, pageY: touch.pageY };
+  }
 }
 
 class Game {
   constructor() {
     this.canvas = getGameCanvas();
     this.context = get2DContext();
-    this.controller = new Controller();
+    this.controller = new Controller(this.canvas);
     this.spaceShip = new SpaceShip(this.canvas.width * .10, this.canvas.height / 2, 5, 15, getRandomColor(), INITIAL_SHIP_SPEED);
     this.spaceShip.setCanvas(this.canvas);
     this.spaceShip.setContext(this.context);
