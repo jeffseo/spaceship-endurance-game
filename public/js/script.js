@@ -144,6 +144,8 @@ class Controller {
     this.upPressed = false;
     this.downPressed = false;
     this.spacePressed = false;
+    this.enterPressed = false;
+    this.escapePressed = false;
     this.setUpControllerEvents();
   }
 
@@ -153,6 +155,14 @@ class Controller {
   }
 
   keyDownHandler(e) {
+    if (e.keyCode == 13) {
+      this.enterPressed = true;
+    }
+
+    if (e.keyCode == 27) {
+      this.escapePressed = true;
+    }
+
     if (e.keyCode == 32) {
       this.spacePressed = true;
     }
@@ -169,6 +179,14 @@ class Controller {
   }
 
   keyUpHandler(e) {
+    if (e.keyCode == 13) {
+      this.enterPressed = false;
+    }
+
+    if (e.keyCode == 27) {
+      this.escapePressed = false;
+    }
+
     if (e.keyCode == 32) {
       this.spacePressed = false;
     }
@@ -203,19 +221,93 @@ class Game {
     this.spaceShip.controller = this.controller;
     this.obstacles = [];
     this.score = 0;
+    this.states = {
+      menu: false,
+      playing: false,
+      paused: false,
+      end: false,
+    };
+    this.stateEvents = {
+      menu: [],
+      playing: [],
+      paused: [],
+      end: [],
+    };
   }
 
   start() {
     setInterval(this.updateGame.bind(this), 10);
-    setInterval(this.generateObstacles.bind(this), 1000);
+    this.changeState('menu');
   }
 
   updateGame() {
     clearCanvas();
-    this.detectCollision();
-    this.spaceShip.move();
-    this.updateObstacles();
-    this.drawScore();
+    if (this.states.menu) {
+      if (this.controller.enterPressed) {
+        this.changeState('playing');
+        this.clear();
+      }
+      this.spaceShip.move();
+      this.updateObstacles();
+      this.drawMenu();
+    } else if (this.states.playing) {
+      if (this.controller.escapePressed) {
+        this.changeState('paused');
+      }
+      this.detectCollision();
+      this.spaceShip.move();
+      this.updateObstacles();
+      this.drawScore();
+    } else if (this.states.paused) {
+      if (this.controller.enterPressed) {
+        this.changeState('playing');
+      }
+      this.drawPauseScreen();
+    } else if (this.states.end) {
+      if (this.controller.enterPressed) {
+        this.changeState('playing');
+        this.clear();
+      }
+      this.drawEndScreen();
+    }
+  }
+
+  changeState(state) {
+    if (state in this.states) {
+      for (let st in this.states) {
+        if (this.states[st] == true) {
+          this.clearStateEvents(st);
+          this.states[st] = false;
+        } else if (st == state) {
+          this.addStateEvents(st);
+          this.states[st] = true;
+        }
+      }
+    } else {
+      throw new TypeError("Invalid state!");
+    }
+  }
+
+  clearStateEvents(state) {
+    while(this.stateEvents[state].length != 0) {
+      clearInterval(this.stateEvents[state].pop());
+    }
+  }
+
+  addStateEvents(state) {
+    if (state == 'menu') {
+      console.log("Adding state events for menu");
+      this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 1000));
+    } else if (state == 'playing') {
+      console.log("Adding state events for playing");
+      this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 1000));
+    } else if (state == 'paused') {
+      console.log("Adding state events for paused");
+    } else if (state == 'end') {
+      console.log("Adding state events for end");
+    } else {
+      throw new TypeError("Invalid state!");
+    }
   }
 
   generateObstacles() {
@@ -254,7 +346,7 @@ class Game {
       //   return true;
       // }
       if (this.isSpaceShipVertexWithinCircle(this.obstacles[i])){
-        this.restart();
+        this.changeState('end');
       }
     }
   }
@@ -285,6 +377,11 @@ class Game {
 
   restart() {
     alert(`Rekt. Found ${this.score} planets`);
+    this.changeState('menu');
+    this.clear();
+  }
+
+  clear() {
     this.controller.clear();
     this.spaceShip.x = INITIAL_POSITION_X;
     this.spaceShip.y = INITIAL_POSITION_Y;
@@ -296,6 +393,26 @@ class Game {
     this.context.font = "16px Arial";
     this.context.fillStyle = "#0095DD";
     this.context.fillText(`Score: ${this.score}`, 8, 20);
+  }
+
+  drawMenu() {
+    this.context.font = "32px Arial";
+    this.context.fillStyle = "#0095DD";
+    this.context.fillText(`Press Enter to start!`, this.canvas.width*.20, this.canvas.height/2);
+  }
+
+  drawPauseScreen() {
+    this.context.font = "32px Arial";
+    this.context.fillStyle = "#0095DD";
+    this.context.fillText(`Paused.`, this.canvas.width*.20, this.canvas.height/4);
+    this.context.fillText(`Press Enter to resume!`, this.canvas.width*.20, this.canvas.height/2);
+  }
+
+  drawEndScreen() {
+    this.context.font = "32px Arial";
+    this.context.fillStyle = "#0095DD";
+    this.context.fillText(`Rekt. Score: ${this.score}`, this.canvas.width*.20, this.canvas.height/4);
+    this.context.fillText(`Press Enter to restart!`, this.canvas.width*.20, this.canvas.height/2);
   }
 }
 
