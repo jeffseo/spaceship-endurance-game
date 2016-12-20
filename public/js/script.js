@@ -59,20 +59,32 @@ class SpaceShip extends Drawable {
   move() {
     if (this.controller) {
       this.setSpeedBoost();
-      if (this.controller.upPressed && this.y >= this.width + this.speed) {
+      if (this.controller.upPressed && this.y > this.width) {
         this.y -= this.speed;
+        if (this.y < this.width) {
+          this.y = this.width;
+        }
       }
 
-      if (this.controller.downPressed && this.y < GAME_HEIGHT - this.width - this.speed) {
+      if (this.controller.downPressed && this.y < GAME_HEIGHT - this.width) {
         this.y += this.speed;
+        if (this.y > GAME_HEIGHT - this.width) {
+          this.y = GAME_HEIGHT - this.width;
+        }
       }
 
-      if (this.controller.leftPressed && this.x > this.height + this.speed) {
+      if (this.controller.leftPressed && this.x > this.height) {
         this.x -= this.speed;
+        if (this.x < this.height) {
+          this.x = this.height;
+        }
       }
 
-      if (this.controller.rightPressed && this.x < GAME_WIDTH - this.height - this.speed) {
+      if (this.controller.rightPressed && this.x < GAME_WIDTH) {
         this.x += this.speed;
+        if (this.x > GAME_WIDTH) {
+          this.x = GAME_WIDTH;
+        }
       }
       this.draw();
     }
@@ -85,6 +97,13 @@ class SpaceShip extends Drawable {
     else {
       this.speed = INITIAL_SHIP_SPEED;
     }
+  }
+
+  getVertices() {
+    const v1 = [this.x, this.y];
+    const v2 = [this.x - this.height, this.y - this.width];
+    const v3 = [this.x - this.height, this.y + this.width];
+    return [v1,v2,v3];
   }
 
   // TODO: For performance reasons, it is likely that I would have to clear a portion of the canvas eventually.
@@ -193,11 +212,9 @@ class Game {
 
   updateGame() {
     clearCanvas();
+    this.detectCollision();
     this.spaceShip.move();
     this.updateObstacles();
-    if (this.isCollision()) {
-      this.restart();
-    }
     this.drawScore();
   }
 
@@ -226,16 +243,42 @@ class Game {
     }
   }
 
-  //TODO: Find a better collision check method/alg.
-  isCollision() {
+  //http://www.phatcode.net/articles.php?id=459
+  //TODO: Maybe include test scenario 2 and 3 from reference?
+  detectCollision() {
     for (let i = 0; i < this.obstacles.length; i += 1) {
-      let obstacle = this.obstacles[i];
-      if (this.spaceShip.x < obstacle.x + obstacle.radius &&
-          this.spaceShip.x > obstacle.x - obstacle.radius &&
-          this.spaceShip.y < obstacle.y + obstacle.radius &&
-          this.spaceShip.y > obstacle.y - obstacle.radius) {
-        return true;
+      // if (this.spaceShip.x < obstacle.x + obstacle.radius &&
+      //     this.spaceShip.x > obstacle.x - obstacle.radius &&
+      //     this.spaceShip.y < obstacle.y + obstacle.radius &&
+      //     this.spaceShip.y > obstacle.y - obstacle.radius) {
+      //   return true;
+      // }
+      if (this.isSpaceShipVertexWithinCircle(this.obstacles[i])){
+        this.restart();
       }
+    }
+  }
+
+  // http://www.phatcode.net/articles.php?id=459
+  // Test scenario-1: Checks if any vertices are within a circle
+  isSpaceShipVertexWithinCircle(obstacle) {
+    const vertices = this.spaceShip.getVertices();
+    const c1x = obstacle.x - vertices[0][0];
+    const c1y = obstacle.y - vertices[0][1];
+    if (Math.sqrt(c1x*c1x + c1y*c1y) < obstacle.radius) {
+      return true;
+    }
+
+    const c2x = obstacle.x - vertices[1][0];
+    const c2y = obstacle.y - vertices[1][1];
+    if (Math.sqrt(c2x*c2x + c2y*c2y) < obstacle.radius) {
+      return true;
+    }
+
+    const c3x = obstacle.x - vertices[2][0];
+    const c3y = obstacle.y - vertices[2][1];
+    if (Math.sqrt(c3x*c3x + c3y*c3y) < obstacle.radius) {
+      return true;
     }
     return false;
   }
