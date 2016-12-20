@@ -69,9 +69,34 @@ class SpaceShip extends Drawable {
 
   move() {
     if (this.controller && this.canvas) {
-      if (this.controller.touchEvents.length != 0) {
-        alert(this.controller.touchEvents);
-        console.log(this.controller.touchEvents);
+      if (this.controller.touchEvents.length >= 2) {
+        const oldTouch = this.controller.touchEvents.pop();
+        const newTouch = this.controller.touchEvents.pop();
+        const deltaX = newTouch.pageX - oldTouch.pageX;
+        if (deltaX > 0) {
+          this.x -= this.speed;
+        } else if (deltaX < 0) {
+          this.x += this.speed;
+        }
+
+        if (this.x < this.height) {
+          this.x = this.height;
+        } else if (this.x > this.canvas.width) {
+          this.x = this.canvas.width;
+        }
+
+        const deltaY = newTouch.pageY - oldTouch.pageY;
+        if (deltaY > 0) {
+          this.y -= this.speed;
+        } else if (deltaY < 0) {
+          this.y += this.speed;
+        }
+
+        if (this.y < this.width) {
+          this.y = this.width;
+        } else if (this.y > this.canvas.height - this.width) {
+          this.y = this.canvas.height - this.width;
+        }
       } else {
         this.setSpeedBoost();
         if (this.controller.isKeyPressed('up') && this.y > this.width) {
@@ -179,7 +204,7 @@ class Controller {
     document.addEventListener("keyup", this.keyUpHandler.bind(this), false);
     this.canvas.addEventListener("touchstart", this.startHandler.bind(this), false);
     this.canvas.addEventListener("touchend", this.endHandler.bind(this), false);
-    this.canvas.addEventListener("touchcancel", this.cancelHandler.bind(this), false);
+    // this.canvas.addEventListener("touchcancel", this.cancelHandler.bind(this), false);
     this.canvas.addEventListener("touchmove", this.moveHandler.bind(this), false);
   }
 
@@ -216,27 +241,27 @@ class Controller {
   // The following are handlers for touch events
   startHandler(e) {
     e.preventDefault();
-    e.changedTouches.forEach((touch) => {
-      this.touchEvents.unshift(this.copyTouch(touch));
-    })
+    const touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i += 1) {
+      this.touchEvents.unshift(this.copyTouch(touches[i]));
+    }
   }
 
   moveHandler(e) {
     e.preventDefault();
-    e.changedTouches.forEach((touch) => {
-      this.touchEvents.unshift(this.copyTouch(touch));
-    })
+    const touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i += 1) {
+      this.touchEvents.unshift(this.copyTouch(touches[i]));
+    }
   }
 
   endHandler(e) {
     e.preventDefault();
-    e.changedTouches.forEach((touch) => {
-      this.touchEvents.unshift(this.copyTouch(touch));
-    })
-  }
-
-  cancelHandler(e) {
-
+    this.touchEvents = [];
+    // const touches = e.changedTouches;
+    // for (let i = 0; i < touches.length; i += 1) {
+    //   this.touchEvents.unshift(this.copyTouch(touches[i]));
+    // }
   }
 
   copyTouch(touch) {
@@ -295,7 +320,7 @@ class Game {
       }
       this.renderPauseScreen();
     } else if (this.states.end) {
-      if (this.controller.isKeyPressed('enter')) {
+      if (this.controller.isKeyPressed('enter') || this.controller.touchEvents != 0) {
         this.changeState('playing');
         this.clear();
       }
