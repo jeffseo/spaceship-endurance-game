@@ -70,6 +70,7 @@ class SpaceShip extends Drawable {
   move() {
     if (this.controller && this.canvas) {
       if (this.controller.touchEvents.length != 0) {
+        alert(this.controller.touchEvents);
         console.log(this.controller.touchEvents);
       } else {
         this.setSpeedBoost();
@@ -205,6 +206,7 @@ class Controller {
     for (let code in this.keyCodes) {
       this.keyPressedStatus[this.keyCodes[code]] = false;
     }
+    this.touchEvents = [];
   }
 
   setCanvas(canvas) {
@@ -277,7 +279,7 @@ class Game {
   updateGame() {
     clearCanvas();
     if (this.states.menu) {
-      if (this.controller.isKeyPressed('enter')) {
+      if (this.controller.isKeyPressed('enter') || this.controller.touchEvents != 0) {
         this.changeState('playing');
         this.clear();
       }
