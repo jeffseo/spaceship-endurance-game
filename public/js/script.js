@@ -67,6 +67,7 @@ class SpaceShip extends Drawable {
     }
   }
 
+  //TODO: refactor into Touch and Keyboard
   move() {
     if (this.controller && this.canvas) {
       if (this.controller.touchEvents.length >= 2) {
