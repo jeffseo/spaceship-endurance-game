@@ -17,6 +17,20 @@
   <script src="js/script.js"></script>
   <!-- <link rel="stylesheet" href="css/styles.css?v=1.0"> -->
 
+  <!-- Notice the URL, this is handled by socket.io on the server automatically, via express -->
+  <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+
+  <!-- This will create a connection to socket.io, and print the user serverid that we sent from the server side. -->
+  <script type="text/javascript">
+    //This is all that needs
+    var socket = io.connect('/');
+
+    //Now we can listen for that event
+    socket.on('onconnected', function( data ) {
+      //Note that the data is the object we sent from the server, as is. So we can assume its id exists.
+      console.log( 'Connected successfully to the socket.io server. My server side ID is ' + data.id );
+    });
+  </script>
 </head>
 
 <body>
@@ -25,10 +39,13 @@
   </header>
 
   <main>
+    <h2 style="text-align:center">Single player</h2>
     <canvas id="gameCanvas"></canvas>
     <p align="center">Controls: Arrow-keys to move, spacebar for speed, esc for pause</p>
+    <br>
+    <h2 style="text-align:center">Multiplayer</h2>
+    <canvas id="testCanvas"></canvas>
   </main>
-
 </body>
 
 <footer>
