@@ -11,16 +11,21 @@ const server = app.listen(app.get('port'), function () {
 const io = require('socket.io')(server);
 const game = new gameServer();
 
-io.on('connection', function(client) {
-  console.log('User connected');
+let playerCount = 0;
 
+setInterval(game.generateObstacles, 500);
+
+io.on('connection', function(client) {
   client.on('joinGame', function(user) {
     console.log(`${user.id} has joined the game`);
+    playerCount += 1;
+    console.log(playerCount);
     //client.emit('addTank', ship);
     client.broadcast.emit('addShip', game.addShip(user.x, user.y, user.id));
   });
 
   client.on('sync', (data) => {
+    console.log(data);
     //Receive data from clients
     if (data.ship != undefined) {
       game.syncShip(data.ship);
@@ -30,8 +35,8 @@ io.on('connection', function(client) {
     game.syncObstacles();
 
     //Broadcast data to clients
-    //client.emit('sync', game.getData());
-    //client.broadcast.emit('sync', game.getData());
+    client.emit('sync', game.getData());
+    client.broadcast.emit('sync', game.getData());
 
     //clean up
     game.cleanShips();
@@ -41,6 +46,6 @@ io.on('connection', function(client) {
   client.on('leaveGame', (userId) => {
     console.log(`${userId} has left the game.`);
     game.removeShip(userId);
-    //client.broadcast.emit('removeShip', userId);
+    client.broadcast.emit('removeShip', userId);
   });
 });

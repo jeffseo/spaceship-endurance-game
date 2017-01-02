@@ -10,6 +10,7 @@ class GameServer {
   constructor() {
     this.ships = [];
     this.obstacles = [];
+    this.playerCount = 0;
   }
 
   getData() {
@@ -69,6 +70,30 @@ class GameServer {
   cleanObstacles() {
     this.obstacles = this.obstacles.filter(obstacle => !obstacle.out);
   }
+
+  generateObstacles() {
+    if (this.playerCount > 0) {
+      // generate obstacle if true
+      if (Math.random() >= 0.5) {
+        const yPosition = Math.floor(Math.random() * 1000);
+        const radius = Math.floor(Math.random() * 100) + 1;
+        const randomSpeed = Math.floor(Math.random() * 20) + 1;
+        // const scaledSpeed = Math.floor(randomSpeed) + 1;
+        const obstacle = new Obstacle(1000 + radius, yPosition, radius, randomSpeed, getRandomColor());
+        this.obstacles.push(obstacle);
+      }
+    }
+  }
+}
+
+// http://stackoverflow.com/questions/1484506/random-color-generator-in-javascript
+const getRandomColor = () => {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
 }
 
 module.exports = GameServer;

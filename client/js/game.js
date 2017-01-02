@@ -53,7 +53,6 @@ class Game {
         }
         this.clear();
       }
-
       this.renderMenuScreen();
     } else if (this.states.singlePlay) {
       if (this.controller.isKeyPressed('escape') && this.isSinglePlayer) {
@@ -72,7 +71,8 @@ class Game {
       }
       this.renderEndScreen();
     } else if (this.states.multiPlay) {
-
+      this.renderPlayScreen();
+      this.sendData();
     }
   }
 
@@ -111,6 +111,7 @@ class Game {
       //add event listeners as necessary
     } else if (state == 'multiPlay') {
       //add event listeners as necessary
+      this.stateEvents[state].push(setInterval(this.refreshObstacles.bind(this), 1000));
     } else {
       throw new TypeError("Invalid state!");
     }
@@ -283,7 +284,9 @@ class Game {
     this.detectCollision();
     this.spaceShip.move();
     this.spaceShip.draw();
-    this.moveObstacles();
+    if (this.states.singlePlay) {
+      this.moveObstacles();
+    }
     this.drawObstacles();
     this.drawScore();
   }
@@ -310,25 +313,6 @@ class Game {
     // Grab the unique session ID from the global socket connection variable
     this.spaceShip.id = this.socket.io.engine.id;
 
-    this.socket.on('addShip', function(ship){
-    	this.addShip(ship.id, ship.x, ship.y);
-    });
-
-    this.socket.on('sync', function(gameServerData){
-  	   game.receiveData(gameServerData);
-    });
-
-    // this.socket.on('killShip', function(shipData){
-    //   if (!game.isSinglePlayer) {
-    //   	game.killShip(shipData);
-    //   }
-    // });
-
-    this.socket.on('removeShip', function(shipId){
-      if (!this.isSinglePlayer) {
-    	   this.removeShip(shipId);
-       }
-    });
     socket.emit('joinGame',
       { id: this.spaceShip.id,
         x: this.spaceShip.x,
@@ -386,7 +370,7 @@ class Game {
         });
 
         if(!found) {
-          this.addShip(clientShip.id, clientShip.x, clientShip.y);
+          this.addShip(serverShip.id, serverShip.x, serverShip.y);
         }
       }
     });
@@ -394,6 +378,7 @@ class Game {
     serverData.obstacles.forEach( (obstacle) => {
       this.obstacles.push(new Obstacle(obstacle.x, obstacle.y, obstacle.radius, obstacle.color, obstacle.speed));
     });
+    console.log(this.obstacles);
   }
 }
 

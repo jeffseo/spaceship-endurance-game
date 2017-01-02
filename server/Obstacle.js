@@ -1,8 +1,10 @@
 class Obstacle {
-  constructor(x, y, speed) {
+  constructor(x, y, r, speed, color) {
     this.x = x;
     this.y = y;
+    this.radius = r;
     this.speed = speed;
+    this.color = color;
     this.out = false;
   }
 
