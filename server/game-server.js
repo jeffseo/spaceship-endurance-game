@@ -19,8 +19,10 @@ class GameServer {
     };
   }
 
-  addShip(ship) {
+  addShip(x, y, id) {
+    const ship = new Ship(x, y, id);
     this.ships.push(ship);
+    return ship;
   }
 
   addObstacle(obstacle) {

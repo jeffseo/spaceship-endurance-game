@@ -16,10 +16,8 @@ io.on('connection', function(client) {
 
   client.on('joinGame', function(user) {
     console.log(`${user.id} has joined the game`);
-    const ship = new Ship(INIT_X_POSITION, INIT_Y_POSITION, user.id);
     //client.emit('addTank', ship);
-    //client.broadcast.emit('addTank', ship);
-    game.addShip(new Ship(INIT_X_POSITION, INIT_Y_POSITION, user.id));
+    client.broadcast.emit('addShip', game.addShip(user.x, user.y, user.id));
   });
 
   client.on('sync', (data) => {
