@@ -1,0 +1,14 @@
+Game style:
+1. Round based:
+  - each round will increase in the number and speed of obstacles
+  - maintain a top leaderboard of highest rounds reached
+2. Survival based:
+  - obstacle number and speed will increase with time
+  - maintain a scoreboard of current people with their scores
+
+
+Ship types:
+1. Speedy
+ - Small in size, press space to boost and move quickly
+2. Tanker
+ - Big in size, press space to output a shield to make oneself invulnerable for a short period (cooldown)

@@ -4,12 +4,12 @@ const express = require('express'),
 
 // Set up the app
 app.use(morgan('dev'));
-app.use(express.static('public'));
+app.use(express.static('client'));
 
 app.set('port', (process.env.PORT || 5000));
 
 app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile(__dirname + '/client/index.html');
 })
 
 module.exports = app;

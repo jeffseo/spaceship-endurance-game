@@ -1,5 +1,5 @@
 const app = require('./app'),
-      gameServer = require('./game/game-server');
+      gameServer = require('./server/game-server');
 
 const server = app.listen(app.get('port'), function () {
   console.log(`App listening on port ${app.get('port')}`);
@@ -11,15 +11,19 @@ const server = app.listen(app.get('port'), function () {
 const io = require('socket.io')(server);
 const game = new gameServer();
 
-io.on('connection', function(client) {
-  console.log('User connected');
+let playerCount = 0;
+let generate = undefined;
 
+io.on('connection', function(client) {
   client.on('joinGame', function(user) {
     console.log(`${user.id} has joined the game`);
-    const ship = new Ship(INIT_X_POSITION, INIT_Y_POSITION, user.id);
+    playerCount += 1;
+    console.log(`Player count ${playerCount}`);
+    if (playerCount > 0 && generate == undefined) {
+      generate = setInterval(function() { game.generateObstacles() }, 1000);
+    }
     //client.emit('addTank', ship);
-    //client.broadcast.emit('addTank', ship);
-    game.addShip(new Ship(INIT_X_POSITION, INIT_Y_POSITION, user.id));
+    client.broadcast.emit('addShip', game.addShip(user.x, user.y, user.id));
   });
 
   client.on('sync', (data) => {
@@ -32,8 +36,8 @@ io.on('connection', function(client) {
     game.syncObstacles();
 
     //Broadcast data to clients
-    //client.emit('sync', game.getData());
-    //client.broadcast.emit('sync', game.getData());
+    client.emit('sync', game.getData());
+    client.broadcast.emit('sync', game.getData());
 
     //clean up
     game.cleanShips();
@@ -42,7 +46,13 @@ io.on('connection', function(client) {
 
   client.on('leaveGame', (userId) => {
     console.log(`${userId} has left the game.`);
+    playerCount -= 1;
+    console.log(`Player count ${playerCount}`);
     game.removeShip(userId);
-    //client.broadcast.emit('removeShip', userId);
+    client.broadcast.emit('removeShip', userId);
+    if (playerCount < 1) {
+      clearInterval(generate);
+      generate = undefined;
+    }
   });
 });
