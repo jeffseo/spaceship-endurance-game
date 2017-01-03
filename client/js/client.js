@@ -5,7 +5,8 @@ const MAX_HEIGHT = 680;
 
 const INITIAL_SHIP_SPEED = 4;
 const BOOSTED_SHIP_SPEED = 6;
-const socket = io.connect('https://keplerplanetattack.herokuapp.com');
+// const socket = io.connect('localhost:5000');
+const socket = io.connect('https://spaceplanetattack.herokuapp.com/');
 const init = () => {
   window.removeEventListener("load", init, false); //remove listener, no longer needed
   resizeCanvas();

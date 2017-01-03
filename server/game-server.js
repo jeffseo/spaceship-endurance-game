@@ -86,12 +86,13 @@ class GameServer {
   }
 
   isUserInGame(userId) {
+    let found = false;
     this.ships.forEach((ship) => {
       if (ship.id == userId) {
-        return true;
+        found = true;
       }
     });
-    return false;
+    return found;
   }
 }
 

@@ -50,6 +50,7 @@ io.on('connection', function(client) {
       playerCount -= 1;
       console.log(`Player count ${playerCount}`);
       game.removeShip(userId);
+      client.emit('removeShip', userId);
       client.broadcast.emit('removeShip', userId);
     }
     if (playerCount < 1) {

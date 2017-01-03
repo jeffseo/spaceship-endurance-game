@@ -151,8 +151,11 @@ class Game {
       if (this.isSpaceShipVertexWithinCircle(this.obstacles[i])){
         // TODO: Temporary solution
         if (this.states.multiplayer) {
+
           this.changeState('menu');
-          this.socket.emit('leaveGame', this.spaceShip.id);
+          this.ships = [];
+          this.obstacles = [];
+          this.exitMultiplayer();
         } else {
           this.changeState('end');
         }
