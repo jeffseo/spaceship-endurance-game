@@ -136,6 +136,7 @@ class Game {
 
   drawObstacles() {
     this.obstacles.forEach(obstacle => obstacle.draw());
+    console.log(this.obstacles);
   }
 
   refreshObstacles() {
@@ -378,7 +379,6 @@ class Game {
     serverData.obstacles.forEach( (obstacle) => {
       this.obstacles.push(new Obstacle(obstacle.x, obstacle.y, obstacle.radius, obstacle.color, obstacle.speed));
     });
-    console.log(this.obstacles);
   }
 }
 

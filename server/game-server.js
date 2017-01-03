@@ -72,16 +72,16 @@ class GameServer {
   }
 
   generateObstacles() {
-    if (this.playerCount > 0) {
-      // generate obstacle if true
-      if (Math.random() >= 0.5) {
-        const yPosition = Math.floor(Math.random() * 1000);
-        const radius = Math.floor(Math.random() * 100) + 1;
-        const randomSpeed = Math.floor(Math.random() * 20) + 1;
-        // const scaledSpeed = Math.floor(randomSpeed) + 1;
-        const obstacle = new Obstacle(1000 + radius, yPosition, radius, randomSpeed, getRandomColor());
-        this.obstacles.push(obstacle);
-      }
+    console.log(`generating`);
+    console.log(this.obstacles);
+    // generate obstacle if true
+    if (Math.random() >= 0.5) {
+      const yPosition = Math.floor(Math.random() * 1000);
+      const radius = Math.floor(Math.random() * 100) + 1;
+      const randomSpeed = Math.floor(Math.random() * 20) + 1;
+      // const scaledSpeed = Math.floor(randomSpeed) + 1;
+      const obstacle = new Obstacle(1000 + radius, yPosition, radius, randomSpeed, getRandomColor());
+      this.obstacles.push(obstacle);
     }
   }
 }

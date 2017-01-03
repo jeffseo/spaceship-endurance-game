@@ -12,10 +12,16 @@ const io = require('socket.io')(server);
 const game = new gameServer();
 
 let playerCount = 0;
-
-setInterval(game.generateObstacles, 500);
+let generate = undefined;
 
 io.on('connection', function(client) {
+  if (generate == undefined) {
+    generate = setInterval(function() { game.generateObstacles() }, 500);
+    console.log(generate);
+  }
+  // if (playerCount == 0) {
+  //   clearInterval(generate);
+  // }
   client.on('joinGame', function(user) {
     console.log(`${user.id} has joined the game`);
     playerCount += 1;
@@ -25,7 +31,6 @@ io.on('connection', function(client) {
   });
 
   client.on('sync', (data) => {
-    console.log(data);
     //Receive data from clients
     if (data.ship != undefined) {
       game.syncShip(data.ship);
@@ -46,6 +51,7 @@ io.on('connection', function(client) {
   client.on('leaveGame', (userId) => {
     console.log(`${userId} has left the game.`);
     game.removeShip(userId);
+    playerCount -= 1;
     client.broadcast.emit('removeShip', userId);
   });
 });

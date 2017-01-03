@@ -10,12 +10,18 @@ window.onload = () => {
   const game = new Game();
   game.setSocket(socket);
   game.start();
+  window.addEventListener('resize', resizeCanvas, false);
+  window.addEventListener('orientationchange', resizeCanvas, false);
   socket.on('addShip', function(ship){
-    game.addShip(ship.id, ship.x, ship.y);
+    if (!game.isSinglePlayer) {
+      game.addShip(ship.id, ship.x, ship.y);
+    }
   });
 
   socket.on('sync', function(gameServerData){
+    if (!game.isSinglePlayer) {
      game.receiveData(gameServerData);
+   }
   });
 
   // socket.on('killShip', function(shipData){
@@ -29,8 +35,6 @@ window.onload = () => {
        game.removeShip(shipId);
      }
   });
-  window.addEventListener('resize', resizeCanvas, false);
-  window.addEventListener('orientationchange', resizeCanvas, false);
 }
 
 
