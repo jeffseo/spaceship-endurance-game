@@ -12,19 +12,17 @@ class Game {
     this.score = 0;
     this.states = {
       menu: false,
-      singlePlay: false,
-      multiPlay: false,
+      singleplayer: false,
+      multiplayer: false,
       paused: false,
       end: false,
-      multiplayer: false,
     };
     this.stateEvents = {
       menu: [],
-      singlePlay: [],
-      multiPlay: [],
+      singleplayer: [],
+      multiplayer: [],
       paused: [],
       end: [],
-      multiplayer: [],
     };
     this.isSinglePlayer = true;
   }
@@ -46,33 +44,33 @@ class Game {
 
       if (this.controller.isKeyPressed('enter') || this.controller.touchEvents != 0) {
         if (this.isSinglePlayer) {
-          this.changeState('singlePlay');
+          this.changeState('singleplayer');
         } else {
-          this.changeState('multiPlay');
+          this.changeState('multiplayer');
           this.setUpMultiplayer();
         }
         this.clear();
       }
       this.renderMenuScreen();
-    } else if (this.states.singlePlay) {
+    } else if (this.states.singleplayer) {
       if (this.controller.isKeyPressed('escape') && this.isSinglePlayer) {
         this.changeState('paused');
       }
       this.renderPlayScreen();
     } else if (this.states.paused) {
       if (this.controller.isKeyPressed('enter')) {
-        this.changeState('singlePlay');
+        this.changeState('singleplayer');
       }
       this.renderPauseScreen();
     } else if (this.states.end) {
       if (this.controller.isKeyPressed('enter') || this.controller.touchEvents != 0) {
-        this.changeState('singlePlay');
+        this.changeState('singleplayer');
         this.clear();
       }
       this.renderEndScreen();
-    } else if (this.states.multiPlay) {
+    } else if (this.states.multiplayer) {
       this.renderPlayScreen();
-      this.sendData();
+      this.sendDataToServer();
     }
   }
 
@@ -102,14 +100,14 @@ class Game {
     if (state == 'menu') {
       this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 500));
       this.stateEvents[state].push(setInterval(this.refreshObstacles.bind(this), 1000));
-    } else if (state == 'singlePlay') {
+    } else if (state == 'singleplayer') {
       this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 750));
       this.stateEvents[state].push(setInterval(this.refreshObstacles.bind(this), 1000));
     } else if (state == 'paused') {
       //add event listeners as necessary
     } else if (state == 'end') {
       //add event listeners as necessary
-    } else if (state == 'multiPlay') {
+    } else if (state == 'multiplayer') {
       //add event listeners as necessary
       this.stateEvents[state].push(setInterval(this.refreshObstacles.bind(this), 1000));
     } else {
@@ -135,7 +133,6 @@ class Game {
   }
 
   drawObstacles() {
-    console.log(this.obstacles);
     this.obstacles.forEach(obstacle => obstacle.draw());
   }
 
@@ -153,11 +150,11 @@ class Game {
     for (let i = 0; i < this.obstacles.length; i += 1) {
       if (this.isSpaceShipVertexWithinCircle(this.obstacles[i])){
         // TODO: Temporary solution
-        if (this.states.multiPlay) {
+        if (this.states.multiplayer) {
           this.changeState('menu');
           this.socket.emit('leaveGame', this.spaceShip.id);
         } else {
-          this.changeState('end');  
+          this.changeState('end');
         }
       }
     }
@@ -198,7 +195,7 @@ class Game {
 
   incrementTimerAndScore() {
     this.timer++;
-    if (this.score < this.timer && this.states.singlePlay) {
+    if (this.score < this.timer && this.states.singleplayer) {
       this.score++;
     }
   }
@@ -291,7 +288,7 @@ class Game {
     this.detectCollision();
     this.spaceShip.move();
     this.spaceShip.draw();
-    if (this.states.singlePlay) {
+    if (this.states.singleplayer) {
       this.moveObstacles();
     } else {
       this.drawOtherShips();
@@ -341,7 +338,7 @@ class Game {
     const ship = new SpaceShip(x,y,5,15,getRandomColor(),INITIAL_SHIP_SPEED);
     ship.setCanvas(this.canvas);
     ship.setContext(this.context);
-    this.ships.push();
+    this.ships.push(ship);
   }
 
   removeShip(id) {
@@ -356,7 +353,7 @@ class Game {
     this.ships.forEach(ship => ship.draw());
   }
 
-  sendData() {
+  sendDataToServer() {
     //Send local data to server
 		const gameData = {};
 

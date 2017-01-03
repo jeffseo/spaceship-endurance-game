@@ -2,7 +2,7 @@
 // golden ratio apparently is width = 1.61 * height
 const INITIAL_SHIP_SPEED = 4;
 const BOOSTED_SHIP_SPEED = 6;
-const socket = io.connect('http://localhost:5000');
+const socket = io.connect('https://keplerplanetattack.herokuapp.com');
 const init = () => {
   window.removeEventListener("load", init, false); //remove listener, no longer needed
   resizeCanvas();
