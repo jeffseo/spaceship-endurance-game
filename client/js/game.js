@@ -343,9 +343,9 @@ class Game {
 
   removeShip(id) {
     if (id == this.spaceShip.id) {
-      this.spaceShip = undefined;
+      // this.spaceShip = undefined;
     } else {
-      this.ships.filter( ship => ship.id != id );
+      this.ships = this.ships.filter( ship => ship.id != id );
     }
   }
 
