@@ -45,13 +45,13 @@ io.on('connection', function(client) {
   });
 
   client.on('leaveGame', (userId) => {
-    console.log(`${userId} has left the game.`);
-    if (playerCount > 0) {
+    if (playerCount > 0 && game.isUserInGame(userId)) {
+      console.log(`${userId} has left the game.`);
       playerCount -= 1;
+      console.log(`Player count ${playerCount}`);
+      game.removeShip(userId);
+      client.broadcast.emit('removeShip', userId);
     }
-    console.log(`Player count ${playerCount}`);
-    game.removeShip(userId);
-    client.broadcast.emit('removeShip', userId);
     if (playerCount < 1) {
       clearInterval(generate);
       generate = undefined;

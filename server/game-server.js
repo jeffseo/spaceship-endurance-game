@@ -84,6 +84,15 @@ class GameServer {
     const obstacle = new Obstacle(MAX_WIDTH + radius, yPosition, radius, randomSpeed, getRandomColor());
     this.obstacles.push(obstacle);
   }
+
+  isUserInGame(userId) {
+    this.ships.forEach((ship) => {
+      if (ship.id == userId) {
+        return true;
+      }
+    });
+    return false;
+  }
 }
 
 // http://stackoverflow.com/questions/1484506/random-color-generator-in-javascript
