@@ -335,7 +335,7 @@ class Game {
   }
 
   addShip(id, x, y) {
-    const ship = new SpaceShip(x,y,5,15,getRandomColor(),INITIAL_SHIP_SPEED);
+    const ship = new SpaceShip(x,y,5,15,"E62E2E",INITIAL_SHIP_SPEED);
     ship.setCanvas(this.canvas);
     ship.setContext(this.context);
     this.ships.push(ship);

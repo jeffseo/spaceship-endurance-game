@@ -1,6 +1,7 @@
 //Temporary WIDTH and HEIGHT. TODO: replace/refactor
-const WIDTH = 1100;
-const HEIGHT = 580;
+// golden ratio apparently is width = 1.61 * height
+const MAX_WIDTH = 1100;
+const MAX_HEIGHT = 680;
 const INIT_X_POSITION = 0;
 const INIT_Y_POSITION = 0;
 const Obstacle = require('./Obstacle');
@@ -10,7 +11,6 @@ class GameServer {
   constructor() {
     this.ships = [];
     this.obstacles = [];
-    this.playerCount = 0;
   }
 
   getData() {
@@ -63,6 +63,11 @@ class GameServer {
     ship.alive = false;
   }
 
+  reset() {
+    this.ships = [];
+    this.obstacles = [];
+  }
+
   cleanShips() {
     this.ships = this.ships.filter(ship => ship.alive);
   }
@@ -72,11 +77,11 @@ class GameServer {
   }
 
   generateObstacles() {
-    const yPosition = Math.floor(Math.random() * 1000);
+    const yPosition = Math.floor(Math.random() * MAX_HEIGHT);
     const radius = Math.floor(Math.random() * 100) + 1;
     const randomSpeed = Math.floor(Math.random() * 20) + 1;
     // const scaledSpeed = Math.floor(randomSpeed) + 1;
-    const obstacle = new Obstacle(1000 + radius, yPosition, radius, randomSpeed, getRandomColor());
+    const obstacle = new Obstacle(MAX_WIDTH + radius, yPosition, radius, randomSpeed, getRandomColor());
     this.obstacles.push(obstacle);
   }
 }

@@ -1,5 +1,8 @@
 // Global variables
 // golden ratio apparently is width = 1.61 * height
+const MAX_WIDTH = 1100;
+const MAX_HEIGHT = 680;
+
 const INITIAL_SHIP_SPEED = 4;
 const BOOSTED_SHIP_SPEED = 6;
 const socket = io.connect('https://keplerplanetattack.herokuapp.com');
@@ -67,4 +70,10 @@ const resizeCanvas = () => {
     canvas.width = window.innerWidth;
   }
   canvas.height = window.innerHeight * .75;
+  if (canvas.width > MAX_WIDTH) {
+    canvas.width = MAX_WIDTH;
+  }
+  if (canvas.height > MAX_HEIGHT) {
+    canvas.height = MAX_HEIGHT;
+  }
 }

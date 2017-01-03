@@ -46,13 +46,16 @@ io.on('connection', function(client) {
 
   client.on('leaveGame', (userId) => {
     console.log(`${userId} has left the game.`);
-    playerCount -= 1;
+    if (playerCount > 0) {
+      playerCount -= 1;
+    }
     console.log(`Player count ${playerCount}`);
     game.removeShip(userId);
     client.broadcast.emit('removeShip', userId);
     if (playerCount < 1) {
       clearInterval(generate);
       generate = undefined;
+      game.reset();
     }
   });
 });
