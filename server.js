@@ -8,55 +8,81 @@ const server = app.listen(app.get('port'), function () {
 /* Socket.IO server set up. */
 //http://rubentd.com/blog/creating-a-multiplayer-game-with-node-js/
 //https://github.com/rubentd/tanks/blob/master/index.js
-const io = require('socket.io')(server);
-const game = new gameServer();
+const io = require('socket.io')(server),
+      game = new gameServer();
 
 let playerCount = 0;
 let generate = undefined;
+let lastSync = undefined;
 
-io.on('connection', function(client) {
-  client.on('joinGame', function(user) {
-    console.log(`${user.id} has joined the game`);
-    playerCount += 1;
+const setEventHandlers = () => {
+  io.on('connection', onSocketConnection);
+}
+
+const onSocketConnection = (client) => {
+  // Listen for client join
+  client.on('joinGame', onClientJoin);
+
+  // Listen for client sync
+  client.on('sync', onClientSync);
+
+  // Listen for client disconnect
+  client.on('leaveGame', onClientLeave);
+}
+
+setEventHandlers();
+
+/**************************************************
+** SOCKET HANDLER METHODS
+**************************************************/
+function onClientJoin(user) {
+  console.log(`${user.id} has joined the game`);
+  playerCount += 1;
+  console.log(`Player count ${playerCount}`);
+  if (playerCount > 0 && generate == undefined) {
+    generate = setInterval(function() { game.generateObstacles() }, 1000);
+    // setInterval(() => game.syncObstacles(), 15);
+  }
+  //client.emit('addTank', ship);
+  this.broadcast.emit('addShip', game.addShip(user.x, user.y, user.id));
+}
+
+function onClientSync(data) {
+  //Receive data from clients
+  if (data.ship != undefined) {
+    game.syncShip(data.ship);
+  }
+
+  //update obstacle positions
+  console.log('syncing');
+  game.syncObstacles();
+  // let currentDate = new Date();
+  // if (currentDate.getTime() - lastSync >= 15 || lastSync === undefined) {
+  //   game.syncObstacles();
+  //   lastSync = currentDate.getTime();
+  // }
+
+  //Broadcast data to clients
+  this.emit('sync', game.getData());
+  this.broadcast.emit('sync', game.getData());
+
+  //clean up
+  game.cleanShips();
+  game.cleanObstacles();
+}
+
+function onClientLeave(userId) {
+  if (playerCount > 0 && game.isUserInGame(userId)) {
+    console.log(`${userId} has left the game.`);
+    playerCount -= 1;
     console.log(`Player count ${playerCount}`);
-    if (playerCount > 0 && generate == undefined) {
-      generate = setInterval(function() { game.generateObstacles() }, 1000);
-    }
-    //client.emit('addTank', ship);
-    client.broadcast.emit('addShip', game.addShip(user.x, user.y, user.id));
-  });
-
-  client.on('sync', (data) => {
-    //Receive data from clients
-    if (data.ship != undefined) {
-      game.syncShip(data.ship);
-    }
-
-    //update obstacle positions
-    game.syncObstacles();
-
-    //Broadcast data to clients
-    client.emit('sync', game.getData());
-    client.broadcast.emit('sync', game.getData());
-
-    //clean up
-    game.cleanShips();
-    game.cleanObstacles();
-  });
-
-  client.on('leaveGame', (userId) => {
-    if (playerCount > 0 && game.isUserInGame(userId)) {
-      console.log(`${userId} has left the game.`);
-      playerCount -= 1;
-      console.log(`Player count ${playerCount}`);
-      game.removeShip(userId);
-      client.emit('removeShip', userId);
-      client.broadcast.emit('removeShip', userId);
-    }
-    if (playerCount < 1) {
-      clearInterval(generate);
-      generate = undefined;
-      game.reset();
-    }
-  });
-});
+    game.removeShip(userId);
+    this.emit('removeShip', userId);
+    this.broadcast.emit('removeShip', userId);
+  }
+  if (playerCount < 1) {
+    clearInterval(generate);
+    generate = undefined;
+    game.reset();
+  }
+}

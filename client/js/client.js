@@ -8,14 +8,16 @@ const BOOSTED_SHIP_SPEED = 6;
 // const socket = io.connect('localhost:5000');
 const socket = io.connect('https://spaceplanetattack.herokuapp.com/');
 const init = () => {
-  window.removeEventListener("load", init, false); //remove listener, no longer needed
   resizeCanvas();
-  const game = new Game();
-  game.setSocket(socket);
-  game.start();
+  window.removeEventListener("load", init, false); //remove listener, no longer needed
   window.addEventListener('resize', resizeCanvas, false);
   window.addEventListener('orientationchange', resizeCanvas, false);
   window.addEventListener('beforeunload', function() { game.exitMultiplayer(); }, false);
+  window.addEventListener('unload', function() { game.exitMultiplayer(); }, false);
+
+  const game = new Game();
+  game.setSocket(socket);
+  game.start();
 
   socket.on('addShip', function(ship){
     if (!game.isSinglePlayer) {

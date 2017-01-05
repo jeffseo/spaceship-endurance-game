@@ -153,7 +153,7 @@ class Game {
         if (this.states.multiplayer) {
 
           this.changeState('menu');
-          this.ships = [];
+          this.remoteShips = [];
           this.obstacles = [];
           this.exitMultiplayer();
         } else {
@@ -294,7 +294,7 @@ class Game {
     if (this.states.singleplayer) {
       this.moveObstacles();
     } else {
-      this.drawOtherShips();
+      this.drawRemoteShips();
     }
     this.drawObstacles();
     this.drawScore();
@@ -317,7 +317,7 @@ class Game {
   ** Multiplayer methods
   **/
   setUpMultiplayer() {
-    this.ships = [];
+    this.remoteShips = [];
 
     // Grab the unique session ID from the global socket connection variable
     this.spaceShip.id = this.socket.io.engine.id;
@@ -341,19 +341,19 @@ class Game {
     const ship = new SpaceShip(x,y,5,15,"#E62E2E",INITIAL_SHIP_SPEED);
     ship.setCanvas(this.canvas);
     ship.setContext(this.context);
-    this.ships.push(ship);
+    this.remoteShips.push(ship);
   }
 
   removeShip(id) {
     if (id == this.spaceShip.id) {
       // this.spaceShip = undefined;
     } else {
-      this.ships = this.ships.filter( ship => ship.id != id );
+      this.remoteShips = this.remoteShips.filter( ship => ship.id != id );
     }
   }
 
-  drawOtherShips() {
-    this.ships.forEach(ship => ship.draw());
+  drawRemoteShips() {
+    this.remoteShips.forEach(ship => ship.draw());
   }
 
   sendDataToServer() {
@@ -375,7 +375,7 @@ class Game {
 
   receiveData(serverData) {
     if (serverData.ships.length) {
-      this.ships = [];
+      this.remoteShips = [];
       serverData.ships.forEach( (serverShip) => {
         // update the client's spaceship
         if (serverShip.id == this.spaceShip.id) {
@@ -383,7 +383,7 @@ class Game {
         } else {
           //Update foreign ships
           let found = false;
-          this.ships.forEach( (clientShip) => {
+          this.remoteShips.forEach( (clientShip) => {
             if (clientShip.id == serverShip.id) {
               clientShip.x = serverShip.x;
               clientShip.y = serverShip.y;
