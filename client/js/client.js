@@ -18,31 +18,8 @@ const init = () => {
   const game = new Game();
   game.setSocket(socket);
   game.start();
-
-  socket.on('addShip', function(ship){
-    if (!game.isSinglePlayer) {
-      game.addShip(ship.id, ship.x, ship.y);
-    }
-  });
-
-  socket.on('sync', function(gameServerData){
-    if (!game.isSinglePlayer) {
-     game.receiveData(gameServerData);
-   }
-  });
-
-  // socket.on('killShip', function(shipData){
-  //   if (!game.isSinglePlayer) {
-  //   	game.killShip(shipData);
-  //   }
-  // });
-
-  socket.on('removeShip', function(shipId){
-    if (!game.isSinglePlayer) {
-       game.removeShip(shipId);
-     }
-  });
 }
+
 window.addEventListener('load', init, false);
 
 /**

@@ -26,8 +26,9 @@ const onSocketConnection = (client) => {
   // Listen for client sync
   client.on('sync', onClientSync);
 
-  // Listen for client disconnect
+  // Listen for client leave or disconnect
   client.on('leaveGame', onClientLeave);
+  client.on('disconnect', onClientLeave.bind(client, client.id));
 }
 
 setEventHandlers();
@@ -54,7 +55,6 @@ function onClientSync(data) {
   }
 
   //update obstacle positions
-  console.log('syncing');
   game.syncObstacles();
   // let currentDate = new Date();
   // if (currentDate.getTime() - lastSync >= 15 || lastSync === undefined) {

@@ -1,3 +1,6 @@
+const MAX_FPS = 60;
+const SECOND_TO_MILLISEC = 1000;
+const FONT_SIZE = 32;
 class Game {
   constructor() {
     this.canvas = getGameCanvas();
@@ -17,43 +20,23 @@ class Game {
       paused: false,
       end: false,
     };
-    this.stateEvents = {
-      menu: [],
-      singleplayer: [],
-      multiplayer: [],
-      paused: [],
-      end: [],
-    };
-    this.isSinglePlayer = true;
+    this.stateEvents = [];
+    this.singlePlayerOptionHovered = true;
   }
 
   start() {
     setInterval(this.incrementTimerAndScore.bind(this), 1000);
-    setInterval(this.updateGame.bind(this), 15);
+    setInterval(this.updateGame.bind(this), SECOND_TO_MILLISEC/MAX_FPS);
     this.changeState('menu');
   }
 
   updateGame() {
     clearCanvas();
     if (this.states.menu) {
-      if (this.controller.isKeyPressed('up') && !this.isSinglePlayer) {
-        this.isSinglePlayer = !this.isSinglePlayer;
-      } else if (this.controller.isKeyPressed('down') && this.isSinglePlayer) {
-        this.isSinglePlayer = !this.isSinglePlayer;
-      }
-
-      if (this.controller.isKeyPressed('enter') || this.controller.touchEvents != 0) {
-        if (this.isSinglePlayer) {
-          this.changeState('singleplayer');
-        } else {
-          this.changeState('multiplayer');
-          this.setUpMultiplayer();
-        }
-        this.clear();
-      }
+      this.checkMenuInputs();
       this.renderMenuScreen();
     } else if (this.states.singleplayer) {
-      if (this.controller.isKeyPressed('escape') && this.isSinglePlayer) {
+      if (this.controller.isKeyPressed('escape')) {
         this.changeState('paused');
       }
       this.renderPlayScreen();
@@ -74,42 +57,42 @@ class Game {
     }
   }
 
-  changeState(state) {
-    if (state in this.states) {
-      for (let st in this.states) {
-        if (this.states[st] == true) {
-          this.clearStateEvents(st);
-          this.states[st] = false;
-        } else if (st == state) {
-          this.addStateEvents(st);
-          this.states[st] = true;
+  changeState(requestedState) {
+    if (requestedState in this.states) {
+      // Set the current state to false
+      for (let state in this.states) {
+        if (this.states[state] == true) {
+          this.states[state] = false;
         }
       }
+      this.clearStateEvents();
+      this.addStateEvents(requestedState);
+      this.states[requestedState] = true;
     } else {
       throw new TypeError("Invalid state!");
     }
   }
 
-  clearStateEvents(state) {
-    while(this.stateEvents[state].length != 0) {
-      clearInterval(this.stateEvents[state].pop());
+  clearStateEvents() {
+    while(this.stateEvents.length != 0) {
+      clearInterval(this.stateEvents.pop());
     }
   }
 
   addStateEvents(state) {
     if (state == 'menu') {
-      this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 500));
-      this.stateEvents[state].push(setInterval(this.refreshObstacles.bind(this), 1000));
+      this.stateEvents.push(setInterval(this.generateObstacles.bind(this), 500));
+      this.stateEvents.push(setInterval(this.refreshObstacles.bind(this), 1000));
     } else if (state == 'singleplayer') {
-      this.stateEvents[state].push(setInterval(this.generateObstacles.bind(this), 750));
-      this.stateEvents[state].push(setInterval(this.refreshObstacles.bind(this), 1000));
+      this.stateEvents.push(setInterval(this.generateObstacles.bind(this), 750));
+      this.stateEvents.push(setInterval(this.refreshObstacles.bind(this), 1000));
     } else if (state == 'paused') {
       //add event listeners as necessary
     } else if (state == 'end') {
       //add event listeners as necessary
     } else if (state == 'multiplayer') {
       //add event listeners as necessary
-      this.stateEvents[state].push(setInterval(this.refreshObstacles.bind(this), 1000));
+      // this.stateEvents.push(setInterval(this.refreshObstacles.bind(this), 1000));
     } else {
       throw new TypeError("Invalid state!");
     }
@@ -117,15 +100,14 @@ class Game {
 
   generateObstacles() {
     // generate obstacle if true
-    if (Math.random() >= 0.5) {
-      const yPosition = Math.floor(Math.random() * this.canvas.height);
-      const radius = Math.floor(Math.random() * 100) + 1;
-      const randomSpeed = Math.floor(Math.random() * 15) + 1;
-      const scaledSpeed = Math.floor(randomSpeed * this.score/100) + 1;
-      const obstacle = new Obstacle(this.canvas.width + radius, yPosition, radius, getRandomColor(), scaledSpeed);
-      obstacle.setContext(this.context);
-      this.obstacles.push(obstacle);
-    }
+    const randomNumber = Math.random();
+    const yPosition = Math.floor(randomNumber * this.canvas.height);
+    const radius = Math.floor(randomNumber * 100) + 1;
+    const randomSpeed = Math.floor(randomNumber * 15) + 1;
+    const scaledSpeed = Math.floor(randomSpeed * this.score/100) + 1;
+    const obstacle = new Obstacle(this.canvas.width + radius, yPosition, radius, getRandomColor(), scaledSpeed);
+    obstacle.setContext(this.context);
+    this.obstacles.push(obstacle);
   }
 
   moveObstacles() {
@@ -137,11 +119,7 @@ class Game {
   }
 
   refreshObstacles() {
-    for (let i = 0; i < this.obstacles.length; i += 1) {
-      if (this.obstacles[i].x < -this.obstacles[i].radius) {
-        this.obstacles.splice(i, 1);
-      }
-    }
+    this.obstacles = this.obstacles.filter(obstacle => obstacle.x > -obstacle.radius);
   }
 
   //http://www.phatcode.net/articles.php?id=459
@@ -151,11 +129,8 @@ class Game {
       if (this.isSpaceShipVertexWithinCircle(this.obstacles[i])){
         // TODO: Temporary solution
         if (this.states.multiplayer) {
-
-          this.changeState('menu');
-          this.remoteShips = [];
-          this.obstacles = [];
           this.exitMultiplayer();
+          this.changeState('menu');
         } else {
           this.changeState('end');
         }
@@ -248,18 +223,18 @@ class Game {
   }
 
   drawMenu() {
-    this.context.font = "32px Arial";
+    this.context.font = `${FONT_SIZE}px Arial`;
     const title = this.createTextObj('Spaceship Endurance Game');
     const singlePlayer = this.createTextObj('Single Player');
     const multiPlayer = this.createTextObj('Multi Player');
     const prompt = this.createTextObj('Press Enter to start!');
 
-    this.drawText(title.string, (this.canvas.width - title.width) / 2, this.canvas.height*.05, "#0095DD");
+    this.drawText(title.string, (this.canvas.width - title.width) / 2, FONT_SIZE, "#0095DD");
     this.drawText(singlePlayer.string, (this.canvas.width - singlePlayer.width) / 2, this.canvas.height*.5, "#0095DD");
     this.drawText(multiPlayer.string, (this.canvas.width - multiPlayer.width) / 2, this.canvas.height*.6, "#0095DD");
     this.drawText(prompt.string, (this.canvas.width - prompt.width) /2, this.canvas.height * .75, "#0095DD");
 
-    if (this.isSinglePlayer) {
+    if (this.singlePlayerOptionHovered) {
       this.drawArrow((this.canvas.width - singlePlayer.width) * .9 / 2, this.canvas.height*.5 - parseInt(this.context.font)/2);
     } else {
       this.drawArrow((this.canvas.width - multiPlayer.width) * .9 / 2, this.canvas.height*.6 - parseInt(this.context.font)/2);
@@ -280,6 +255,24 @@ class Game {
     this.context.fillText(`Press Enter to restart!`, this.canvas.width*.20, this.canvas.height/2);
   }
 
+  checkMenuInputs() {
+    if (this.controller.isKeyPressed('up') && !this.singlePlayerOptionHovered) {
+      this.singlePlayerOptionHovered = !this.singlePlayerOptionHovered;
+    } else if (this.controller.isKeyPressed('down') && this.singlePlayerOptionHovered) {
+      this.singlePlayerOptionHovered = !this.singlePlayerOptionHovered;
+    }
+
+    if (this.controller.isKeyPressed('enter') || this.controller.touchEvents != 0) {
+      if (this.singlePlayerOptionHovered) {
+        this.changeState('singleplayer');
+      } else {
+        this.changeState('multiplayer');
+        this.setUpMultiplayer();
+      }
+      this.clear();
+    }
+  }
+
   renderMenuScreen() {
     this.spaceShip.draw();
     this.moveObstacles();
@@ -291,7 +284,7 @@ class Game {
     this.detectCollision();
     this.spaceShip.move();
     this.spaceShip.draw();
-    if (this.states.singleplayer) {
+    if (!this.states.multiplayer) {
       this.moveObstacles();
     } else {
       this.drawRemoteShips();
@@ -319,7 +312,10 @@ class Game {
   setUpMultiplayer() {
     this.remoteShips = [];
 
-    // Grab the unique session ID from the global socket connection variable
+    // Set up socket event handlers for server communications
+    this.setUpSocketEventHandlers();
+
+    // Grab the unique session ID from the socket connection variable
     this.spaceShip.id = this.socket.io.engine.id;
 
     this.socket.emit('joinGame',
@@ -330,11 +326,43 @@ class Game {
   }
 
   exitMultiplayer() {
+    this.remoteShips = [];
     this.socket.emit('leaveGame', this.spaceShip.id);
+    this.removeSocketEventHandlers();
   }
 
   setSocket(socket) {
     this.socket = socket;
+  }
+
+  setUpSocketEventHandlers() {
+    this.socket.on('addShip', this.addRemoteShipToGameHandler.bind(this));
+    this.socket.on('sync', this.receiveDataFromServerHandler.bind(this));
+    this.socket.on('removeShip', this.removeRemoteShipFromGameHandler.bind(this));
+  }
+
+  removeSocketEventHandlers() {
+    this.socket.off('addShip');
+    this.socket.off('sync');
+    this.socket.off('removeShip');
+  }
+
+  addRemoteShipToGameHandler(ship) {
+    if (this.states.multiplayer) {
+      this.addShip(ship.id, ship.x, ship.y);
+    }
+  }
+
+  receiveDataFromServerHandler(gameServerData) {
+    if (this.states.multiplayer) {
+     this.receiveData(gameServerData);
+   }
+  }
+
+  removeRemoteShipFromGameHandler(shipId) {
+    if (this.states.multiplayer) {
+       this.removeShip(shipId);
+     }
   }
 
   addShip(id, x, y) {
