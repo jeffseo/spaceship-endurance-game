@@ -80,7 +80,6 @@ class GameServer {
     const yPosition = Math.floor(Math.random() * MAX_HEIGHT);
     const radius = Math.floor(Math.random() * 100) + 1;
     const randomSpeed = Math.floor(Math.random() * 20) + 1;
-    // const scaledSpeed = Math.floor(randomSpeed) + 1;
     const obstacle = new Obstacle(MAX_WIDTH + radius, yPosition, radius, randomSpeed, getRandomColor());
     this.obstacles.push(obstacle);
   }

@@ -41,7 +41,7 @@ function onClientJoin(user) {
   playerCount += 1;
   console.log(`Player count ${playerCount}`);
   if (playerCount > 0 && generate == undefined) {
-    generate = setInterval(function() { game.generateObstacles() }, 1000);
+    generate = setInterval(function() { game.generateObstacles() }, 750);
     // setInterval(() => game.syncObstacles(), 15);
   }
   //client.emit('addTank', ship);
@@ -49,6 +49,10 @@ function onClientJoin(user) {
 }
 
 function onClientSync(data) {
+  //clean up
+  game.cleanShips();
+  game.cleanObstacles();
+
   //Receive data from clients
   if (data.ship != undefined) {
     game.syncShip(data.ship);
@@ -57,7 +61,7 @@ function onClientSync(data) {
   //update obstacle positions
   game.syncObstacles();
   // let currentDate = new Date();
-  // if (currentDate.getTime() - lastSync >= 15 || lastSync === undefined) {
+  // if (lastSync === undefined || currentDate.getTime() - lastSync >= 16) {
   //   game.syncObstacles();
   //   lastSync = currentDate.getTime();
   // }
@@ -65,10 +69,6 @@ function onClientSync(data) {
   //Broadcast data to clients
   this.emit('sync', game.getData());
   this.broadcast.emit('sync', game.getData());
-
-  //clean up
-  game.cleanShips();
-  game.cleanObstacles();
 }
 
 function onClientLeave(userId) {

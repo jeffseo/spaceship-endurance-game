@@ -12,3 +12,10 @@ Ship types:
  - Small in size, press space to boost and move quickly
 2. Tanker
  - Big in size, press space to output a shield to make oneself invulnerable for a short period (cooldown)
+
+Performance notes:
+Atm, client drops all obstacles and creates new obstacles per obstacle every sync (15ms?)
+and is probably not efficient.
+
+What we could do is once the client receives a new obstacle, it maintains it and does not drop it at all.
+- to prevent cheat, we also maintain it on the server side and check the coordinates of it with the spaceship.
