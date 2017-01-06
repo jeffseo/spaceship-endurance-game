@@ -3,8 +3,8 @@
 const MAX_WIDTH = 1100;
 const MAX_HEIGHT = 680;
 
-const socket = io.connect('localhost:5000');
-// const socket = io.connect('https://spaceplanetattack.herokuapp.com/');
+// const socket = io.connect('localhost:5000');
+const socket = io.connect('https://spaceplanetattack.herokuapp.com/');
 const init = () => {
   resizeCanvas();
   window.removeEventListener("load", init, false); //remove listener, no longer needed

@@ -131,7 +131,7 @@ class Game {
   detectCollision() {
     for (let i = 0; i < this.obstacles.length; i += 1) {
       if (this.isSpaceShipVertexWithinCircle(this.obstacles[i])){
-        // TODO: Temporary solution
+        // TODO: Temporary solution will probably have to move collision detection for multiplayer to server
         if (this.states.multiplayer) {
           this.exitMultiplayer();
           this.changeState('menu');
