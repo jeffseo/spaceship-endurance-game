@@ -1,6 +1,10 @@
 const MAX_FPS = 60;
 const SECOND_TO_MILLISEC = 1000;
 const FONT_SIZE = 32;
+
+//TODO: remove the speed settings to the server? maybe only for multiplayer
+const INITIAL_SHIP_SPEED = 4;
+const BOOSTED_SHIP_SPEED = 6;
 class Game {
   constructor() {
     this.canvas = getGameCanvas();
@@ -82,10 +86,10 @@ class Game {
   addStateEvents(state) {
     if (state == 'menu') {
       this.stateEvents.push(setInterval(this.generateObstacles.bind(this), 500));
-      this.stateEvents.push(setInterval(this.refreshObstacles.bind(this), 1000));
+      this.stateEvents.push(setInterval(this.refreshObstacles.bind(this), 2000));
     } else if (state == 'singleplayer') {
       this.stateEvents.push(setInterval(this.generateObstacles.bind(this), 750));
-      this.stateEvents.push(setInterval(this.refreshObstacles.bind(this), 1000));
+      this.stateEvents.push(setInterval(this.refreshObstacles.bind(this), 2000));
     } else if (state == 'paused') {
       //add event listeners as necessary
     } else if (state == 'end') {
