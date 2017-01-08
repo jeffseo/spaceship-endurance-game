@@ -6,6 +6,16 @@ Game style:
   - obstacle number and speed will increase with time
   - maintain a scoreboard of current people with their scores
 
+Game Modes:
+1. Single Player - Survival
+2. Multiplayer:
+ - Co-op:
+  - Similar to survival, group of people work together to survive
+  - will probably be based on the different ship types and utilize the unique skills to work together
+ - Battle mode:
+  - 1 v 1 style mode
+  - items that speed up/down the obstacles (speed down can affect the other players)
+  - TODO: Figure out how to support multiple sessions for this.
 
 Ship types:
 1. Speedy
@@ -19,3 +29,6 @@ and is probably not efficient.
 
 What we could do is once the client receives a new obstacle, it maintains it and does not drop it at all.
 - to prevent cheat, we also maintain it on the server side and check the coordinates of it with the spaceship.
+
+Another performance impact is probably the way I clearing/drawing on the canvas. I am clearing the entire
+canvas every update. I should really be just clearing the areas where drawings exist.
