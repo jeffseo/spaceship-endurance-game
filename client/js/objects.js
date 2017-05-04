@@ -76,9 +76,9 @@ class SpaceShip extends Drawable {
 
         const deltaY = newTouch.pageY - oldTouch.pageY;
         if (deltaY > 0) {
-          this.y -= this.speed;
-        } else if (deltaY < 0) {
           this.y += this.speed;
+        } else if (deltaY < 0) {
+          this.y -= this.speed;
         }
 
         if (this.y < this.width) {
