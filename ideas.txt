@@ -1,0 +1,34 @@
+Game style:
+1. Round based:
+  - each round will increase in the number and speed of obstacles
+  - maintain a top leaderboard of highest rounds reached
+2. Survival based:
+  - obstacle number and speed will increase with time
+  - maintain a scoreboard of current people with their scores
+
+Game Modes:
+1. Single Player - Survival
+2. Multiplayer:
+ - Co-op:
+  - Similar to survival, group of people work together to survive
+  - will probably be based on the different ship types and utilize the unique skills to work together
+ - Battle mode:
+  - 1 v 1 style mode
+  - items that speed up/down the obstacles (speed down can affect the other players)
+  - TODO: Figure out how to support multiple sessions for this.
+
+Ship types:
+1. Speedy
+ - Small in size, press space to boost and move quickly
+2. Tanker
+ - Big in size, press space to output a shield to make oneself invulnerable for a short period (cooldown)
+
+Performance notes:
+Atm, client drops all obstacles and creates new obstacles per obstacle every sync (15ms?)
+and is probably not efficient.
+
+What we could do is once the client receives a new obstacle, it maintains it and does not drop it at all.
+- to prevent cheat, we also maintain it on the server side and check the coordinates of it with the spaceship.
+
+Another performance impact is probably the way I clearing/drawing on the canvas. I am clearing the entire
+canvas every update. I should really be just clearing the areas where drawings exist.

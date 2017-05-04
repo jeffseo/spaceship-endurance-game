@@ -1,0 +1,45 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Spaceship Endurance Game</title>
+  <meta name="description" content="Project 1">
+  <meta name="author" content="Seo">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /** { padding: 0; margin: 0; }*/
+    canvas {
+      background: #eee;
+      display: block;}
+  </style>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <!-- Notice the URL, this is handled by socket.io on the server automatically, via express -->
+  <script type="text/javascript" src="socket.io/socket.io.js"></script>
+  <script src="js/controller.js"></script>
+  <script src="js/objects.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/client.js"></script>
+</head>
+
+<body>
+  <div class="container" style="position:relative">
+    <div id="prompt" class="name-prompt">
+      <div class="input-group">
+        <input id="tank-name" type="text" class="form-control" placeholder="Name your ship" autocomplete="off">
+        <span class="input-group-btn">
+          <input id="join" class="btn btn-primary" type="submit" value="Join the battle">
+        </span>
+      </div>
+    </div>
+
+    <canvas id="gameCanvas" style="border:1px solid #000000;"></canvas>
+    <p align="center">Controls: Arrow-keys to move, spacebar for speed, esc for pause</p>
+  </div>
+</body>
+
+<footer>
+  <p align="center"><a href="https://github.com/jfseo/spaceship-endurance-game">Github</a></p>
+</footer>
+</html>

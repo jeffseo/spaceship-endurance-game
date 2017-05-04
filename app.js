@@ -1,14 +1,15 @@
-const express = require('express');
-const morgan = require('morgan');
-const app = express();
+const express = require('express'),
+      morgan = require('morgan'),
+      app = express();
 
+// Set up the app
 app.use(morgan('dev'));
-app.use(express.static('public'));
+app.use(express.static('client'));
+
 app.set('port', (process.env.PORT || 5000));
+
 app.get('/', function (req, res) {
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile(__dirname + '/client/index.html');
 })
 
-app.listen(app.get('port'), function () {
-  console.log(`Example app listening on port ${app.get('port')}`);
-})
+module.exports = app;
