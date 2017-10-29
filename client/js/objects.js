@@ -130,6 +130,8 @@ class SpaceShip extends Drawable {
 
   getVertices() {
     const v1 = [this.x, this.y];
+
+    // x = height of triangle; y = width of triangle
     const v2 = [this.x - this.height, this.y - this.width];
     const v3 = [this.x - this.height, this.y + this.width];
     return [v1,v2,v3];
@@ -147,7 +149,7 @@ class SpaceShip extends Drawable {
   // }
 }
 
-class Obstacle extends Drawable {
+class Planet extends Drawable {
   constructor(x, y, radius, color, speed) {
     super(x, y, color);
     this.radius = radius;
@@ -167,5 +169,53 @@ class Obstacle extends Drawable {
 
   move() {
     this.x -= this.speed;
+  }
+}
+
+class EnemyShip extends SpaceShip {
+  constructor(x, y, width, height, color, speed, destinationY) {
+    super(x, y, color);
+    this.width = width;
+    this.height = height;
+    this.speed = speed;
+    this.destinationY = destinationY;
+    this.direction = null;
+  }
+
+  move() {
+    this.x -= this.speed;
+    if (Math.abs(this.y - this.destinationY) > this.speed)
+    {
+      this.y += (this.speed * this.calculateDirection());
+    }
+    else
+    {
+      this.speed += 1;
+    }
+  }
+
+  getVertices() {
+    const v1 = [this.x, this.y];
+
+    // x = height of triangle; y = width of triangle
+    const v2 = [this.x + this.height, this.y - this.width];
+    const v3 = [this.x + this.height, this.y + this.width];
+    return [v1,v2,v3];
+  }
+
+  calculateDirection()
+  {
+    if (this.y > this.destinationY)
+    {
+      return -1;
+    }
+    else if (this.y < this.destinationY)
+    {
+      return 1;
+    }
+    else
+    {
+      return 0;
+    }
   }
 }

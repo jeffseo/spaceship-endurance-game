@@ -106,10 +106,19 @@ class Game {
     // generate obstacle if true
     const randomNumber = Math.random();
     const yPosition = Math.floor(randomNumber * this.canvas.height);
-    const radius = Math.floor(randomNumber * 100) + 1;
     const randomSpeed = Math.floor(randomNumber * 15) + 1;
     const scaledSpeed = Math.floor(randomSpeed * this.score/100) + 1;
-    const obstacle = new Obstacle(this.canvas.width + radius, yPosition, radius, getRandomColor(), scaledSpeed);
+    let obstacle = null;
+    if (this.timer % 10 == 0)
+    {
+      // Generate enemy ships
+      obstacle = new EnemyShip(this.canvas.width, yPosition, 5, 15, getRandomColor(), INITIAL_SHIP_SPEED, this.spaceShip.y);
+    }
+    else
+    {
+      const radius = Math.floor(randomNumber * 100) + 1;
+      obstacle = new Planet(this.canvas.width + radius, yPosition, radius, getRandomColor(), scaledSpeed);
+    }
     obstacle.setContext(this.context);
     this.obstacles.push(obstacle);
   }
@@ -123,20 +132,33 @@ class Game {
   }
 
   refreshObstacles() {
-    this.obstacles = this.obstacles.filter(obstacle => obstacle.x > -obstacle.radius);
+    this.obstacles = this.obstacles.filter((obstacle) =>
+    {
+      if (this.obstacles[i] instanceof Planet)
+      {
+        return obstacle.x > -obstacle.radius
+      }
+      else
+      {
+        return (obstacle.x < 0) || (obstacle.y < 0) || (obstacle.y > this.canvas.height) ;
+      }
+    });
   }
 
   //http://www.phatcode.net/articles.php?id=459
   //TODO: Maybe include test scenario 2 and 3 from reference?
   detectCollision() {
     for (let i = 0; i < this.obstacles.length; i += 1) {
-      if (this.isSpaceShipVertexWithinCircle(this.obstacles[i])){
-        // TODO: Temporary solution will probably have to move collision detection for multiplayer to server
-        if (this.states.multiplayer) {
-          this.exitMultiplayer();
-          this.changeState('menu');
-        } else {
-          this.changeState('end');
+      if (this.obstacles[i] instanceof Planet)
+      {
+        if (this.isSpaceShipVertexWithinCircle(this.obstacles[i])){
+          // TODO: Temporary solution will probably have to move collision detection for multiplayer to server
+          if (this.states.multiplayer) {
+            this.exitMultiplayer();
+            this.changeState('menu');
+          } else {
+            this.changeState('end');
+          }
         }
       }
     }
